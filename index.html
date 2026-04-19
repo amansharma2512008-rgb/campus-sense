@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus-Sense | AI & IoT Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #38bdf8;
+            --secondary: #818cf8;
+            --bg-dark: #020617;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --accent-success: #22c55e;
+            --accent-warning: #f59e0b;
+            --accent-api: #ec4899;
+        }
+
+        * { transition: all 0.3s ease; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at top right, #1e1b4b, #020617);
+            color: var(--text-main);
+            margin: 0;
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar { background: rgba(15, 23, 42, 0.9); border-right: 1px solid rgba(255, 255, 255, 0.1); padding: 30px 20px; display: flex; flex-direction: column; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 40px; }
+        .nav-item { padding: 12px; margin-bottom: 10px; border-radius: 8px; cursor: pointer; opacity: 0.7; }
+        .nav-item.active { background: var(--primary); color: #000; opacity: 1; font-weight: 600; }
+
+        /* Main Dashboard Area */
+        main { padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;}
+
+        /* AI Search Bar */
+        .ai-search-container { background: var(--card-bg); border: 1px solid var(--primary); border-radius: 15px; padding: 15px 25px; display: flex; align-items: center; gap: 15px; box-shadow: 0 0 20px rgba(56, 189, 248, 0.15); }
+        .ai-search-input { flex-grow: 1; background: transparent; border: none; color: white; font-size: 1.1rem; outline: none; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .ai-search-input::placeholder { color: #64748b; }
+        .ai-search-btn { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #000; border: none; padding: 10px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .ai-response { width: 100%; background: rgba(56, 189, 248, 0.1); padding: 15px; border-radius: 10px; margin-top: 10px; display: none; font-size: 0.9rem; color: var(--primary); border-left: 4px solid var(--primary); line-height: 1.5; }
+
+        /* Split Screen Layout */
+        .split-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        
+        .panel-header { font-size: 1.2rem; font-weight: 700; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .left-header { color: var(--primary); }
+        .right-header { color: var(--accent-api); }
+
+        /* Cards and Elements */
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .metric-card { background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; }
+        .metric-card h3 { margin: 0; font-size: 0.8rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; }
+        .metric-card .value { font-size: 2.2rem; font-weight: 700; margin: 10px 0; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .chart-section { background: var(--card-bg); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        
+        .ai-prediction-section { background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(129, 140, 248, 0.1)); border-radius: 16px; padding: 25px; border: 1px solid var(--accent-api); }
+        
+        /* Table */
+        .table-wrapper { max-height: 250px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; }
+        td { padding: 10px; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">CAMPUS-SENSE</div>
+        <div class="nav-item active">📊 Dual Dashboard</div>
+        <div class="nav-item">⚙️ Settings</div>
+    </aside>
+
+    <main>
+        <div>
+            <div class="ai-search-container">
+                <span style="font-size: 1.5rem;">✨</span>
+                <input type="text" id="aiQuery" class="ai-search-input" placeholder="Ask AI: 'Should I turn on the AC based on the temperature difference?'">
+                <button class="ai-search-btn" onclick="askAI()">Ask AI</button>
+            </div>
+            <div id="aiResponse" class="ai-response"></div>
+        </div>
+
+        <div class="split-layout">
+            
+            <div class="left-panel">
+                <div class="panel-header left-header">🏢 INDOOR: Hardware Node (ESP32)</div>
+                
+                <div class="dashboard-grid">
+                    <div class="metric-card">
+                        <h3>Indoor Temp</h3>
+                        <div id="hw-temp" class="value">--°C</div>
+                        <div style="font-size: 0.75rem; color: var(--primary);">Live from Render API</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Indoor Humidity</h3>
+                        <div id="hw-hum" class="value">--%</div>
+                    </div>
+                </div>
+
+                <div class="chart-section">
+                    <h3 style="margin-top: 0; font-size: 0.8rem; color: #94a3b8;">LIVE INDOOR TELEMETRY</h3>
+                    <div style="position: relative; height: 180px; width: 100%;">
+                        <canvas id="hwChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-section">
+                    <h3 style="margin-top: 0; font-size: 0.8rem; color: #94a3b8;">RAW HARDWARE LOGS</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead><tr><th>Time</th><th>Temp</th><th>Hum</th></tr></thead>
+                            <tbody id="hw-table-body"><tr><td colspan="3" style="text-align:center;">Initializing...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="panel-header right-header">🌍 OUTDOOR: OpenWeather API</div>
+                
+                <div class="dashboard-grid">
+                    <div class="metric-card">
+                        <h3>Outdoor Temp</h3>
+                        <div id="api-temp" class="value">--°C</div>
+                        <div id="api-desc" style="font-size: 0.75rem; color: var(--accent-api); text-transform: capitalize;">Fetching...</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Outdoor Humidity</h3>
+                        <div id="api-hum" class="value">--%</div>
+                    </div>
+                </div>
+
+                <div class="ai-prediction-section">
+                    <h3 style="margin-top: 0; font-size: 1rem; color: var(--accent-api);">🔮 7-Day Forecast & AI Prediction</h3>
+                    <div id="forecast-list" style="margin-top: 15px;">
+                        <p style="font-size: 0.9rem; opacity: 0.6;">Calculating future trends...</p>
+                    </div>
+                    <hr style="border: 0.5px solid rgba(255,255,255,0.1); margin: 15px 0;">
+                    <p id="future-prediction" style="font-size: 1rem; line-height: 1.4; color: var(--primary);">Analyzing current deltas...</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+    // --- 1. SETUP HARDWARE CHART ---
+    const ctx = document.getElementById('hwChart').getContext('2d');
+    const hwChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{ label: 'Temp (°C)', borderColor: '#f43f5e', borderWidth: 2, pointRadius: 0, data: [], tension: 0.4 }]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            animation: false, 
+            plugins: { legend: { display: false } }, 
+            scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }, x: { grid: { display: false }, ticks: { color: '#64748b' } } } 
+        }
+    });
+
+    // --- 2. CONFIGURATION ---
+    const HW_API_URL = 'https://smart-campus-api-kt8s.onrender.com/api/data';
+    
+    // API KEYS
+    const OPENWEATHER_API_KEY = "8422f4fc247b92cb01b9e747af58b1a7"; 
+    const GEMINI_API_KEY = "AIzaSyCwfNHSdU0uLR13O3fnYiOVNusyRszEOqU"; // <-- UPDATE THIS
+    
+    const LAT = "32.6105"; 
+    const LON = "74.9255";
+    const WEATHER_API_URL = `https://api.openweathermap.org/data/2.5/forecast?lat=${LAT}&lon=${LON}&units=metric&appid=${OPENWEATHER_API_KEY}`;
+    const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    let currentIndoorTemp = 0;
+    let currentOutdoorTemp = 0;
+    let lastDataId = null; 
+
+    // --- 3. FETCH HARDWARE DATA (ESP32) ---
+    async function fetchHardwareData() {
+        try {
+            const response = await fetch(HW_API_URL);
+            const data = await response.json();
+
+            if (data && data.length > 0) {
+                const latest = data[0];
+                if (latest.id !== lastDataId) {
+                    lastDataId = latest.id;
+                    currentIndoorTemp = latest.temp;
+                    document.getElementById('hw-temp').innerText = latest.temp.toFixed(1) + "°C";
+                    document.getElementById('hw-hum').innerText = latest.hum.toFixed(1) + "%";
+                    const chartData = data.slice(0, 15).reverse(); 
+                    hwChart.data.labels = chartData.map(e => new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                    hwChart.data.datasets[0].data = chartData.map(e => e.temp);
+                    hwChart.update('none'); 
+                    const tableBody = document.getElementById('hw-table-body');
+                    let newRows = ""; 
+                    data.slice(0, 10).forEach(entry => {
+                        newRows += `<tr><td>${new Date(entry.timestamp).toLocaleTimeString()}</td><td style="color:#f43f5e">${parseFloat(entry.temp).toFixed(1)}°C</td><td style="color:#38bdf8">${parseFloat(entry.hum).toFixed(0)}%</td></tr>`;
+                    });
+                    tableBody.innerHTML = newRows;
+                }
+            }
+        } catch (error) { console.log("Hardware offline..."); }
+    }
+
+    // --- 4. FETCH OUTDOOR DATA (7-Day Logic) ---
+    async function fetchOutdoorData() {
+        try {
+            const response = await fetch(WEATHER_API_URL);
+            const data = await response.json();
+            
+            if(data.list) {
+                const current = data.list[0];
+                currentOutdoorTemp = current.main.temp;
+                document.getElementById('api-temp').innerText = current.main.temp.toFixed(1) + "°C";
+                document.getElementById('api-hum').innerText = current.main.humidity + "%";
+                document.getElementById('api-desc').innerText = current.weather[0].description;
+
+                const forecastContainer = document.getElementById('forecast-list');
+                let forecastHTML = "";
+                
+                // Get 5 Days from API
+                for (let i = 0; i < 5; i++) {
+                    const dayData = data.list[i * 8];
+                    const date = new Date(dayData.dt * 1000);
+                    const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                    forecastHTML += `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;"><span>${dayName}</span><span style="color: var(--primary);">${dayData.main.temp.toFixed(1)}°C</span><span style="opacity: 0.6;">${dayData.weather[0].main}</span></div>`;
+                }
+
+                // AI Extrapolation for Day 6 & 7
+                const tempStart = data.list[0].main.temp;
+                const tempEnd = data.list[39].main.temp;
+                const trend = (tempEnd - tempStart) / 5;
+
+                for (let j = 1; j <= 2; j++) {
+                    const predictedTemp = (tempEnd + (trend * j)).toFixed(1);
+                    forecastHTML += `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; border-left: 2px solid var(--accent-api); padding-left: 10px;"><span>Day ${5+j} <small>(AI)</small></span><span style="color: var(--accent-api);">${predictedTemp}°C</span><span style="opacity: 0.6;">Trend</span></div>`;
+                }
+                forecastContainer.innerHTML = forecastHTML;
+                updateFuturePrediction();
+            }
+        } catch (error) { console.error("Weather API error:", error); }
+    }
+
+    // --- 5. SIMPLE PREDICTION ---
+    function updateFuturePrediction() {
+        const diff = currentIndoorTemp - currentOutdoorTemp;
+        let prediction = diff > 3 ? "🏢 Indoor is warmer than the forecast. Energy-saving tip: Use natural ventilation." : "✅ Temp equilibrium. HVAC efficiency is high.";
+        document.getElementById('future-prediction').innerText = prediction;
+    }
+
+    // --- 6. TRUE AI (GEMINI) ENGINE ---
+    async function askAI() {
+    const queryInput = document.getElementById('aiQuery');
+    const query = queryInput.value.trim(); 
+    const responseBox = document.getElementById('aiResponse');
+
+    // 1. Check if the question box is empty
+    if (!query) {
+        responseBox.style.display = "block";
+        responseBox.innerText = "⚠️ Please type a question in the search bar first!";
+        return;
+    }
+
+    // 2. Check if the key is still a placeholder
+    if (GEMINI_API_KEY.includes("PASTE_YOUR")) {
+        responseBox.style.display = "block";
+        responseBox.innerText = "❌ Developer Error: Please set your Gemini API Key in the code.";
+        return;
+    }
+
+    responseBox.style.display = "block";
+    responseBox.innerText = "✨ Gemini is analyzing campus telemetry...";
+
+    const context = `
+        You are 'Sense-AI', an assistant for an IoT Dashboard at Central University of Jammu.
+        Live Data:
+        - Indoor Temp: ${currentIndoorTemp}°C
+        - Indoor Humidity: ${document.getElementById('hw-hum').innerText}
+        - Outdoor Temp: ${currentOutdoorTemp}°C
+        User Question: "${query}"
+        Answer in 2 short sentences.
+    `;
+
+    try {
+        const response = await fetch(GEMINI_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents: [{ parts: [{ text: context }] }] })
+        });
+        
+        const data = await response.json();
+
+        // 3. Handle Success
+        if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
+            const aiReply = data.candidates[0].content.parts[0].text;
+            responseBox.innerText = "🤖 " + aiReply;
+            
+            // Text-to-Speech
+            const speech = new SpeechSynthesisUtterance(aiReply);
+            window.speechSynthesis.speak(speech);
+        } 
+        // 4. Handle Detailed Errors from Google
+        else {
+            let errorDetail = "Unknown Error";
+            if (data.error) {
+                errorDetail = data.error.message;
+            } else if (data.promptFeedback) {
+                errorDetail = "Content blocked by safety filters.";
+            }
+            
+            responseBox.innerText = "❌ Google Says: " + errorDetail;
+            console.error("Gemini Error Object:", data);
+        }
+    } catch (error) {
+        responseBox.innerText = "❌ AI Connection Error. Check your internet or browser console.";
+        console.error("Fetch Error:", error);
+    }
+}
+
+    fetchHardwareData();
+    fetchOutdoorData();
+    setInterval(fetchHardwareData, 4000); 
+    setInterval(fetchOutdoorData, 600000); 
+</script>
+</body>
+</html>
