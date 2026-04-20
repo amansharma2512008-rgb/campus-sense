@@ -39,13 +39,7 @@
         /* Main Dashboard Area */
         main { padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;}
 
-        /* AI Search Bar */
-        .ai-search-container { background: var(--card-bg); border: 1px solid var(--primary); border-radius: 15px; padding: 15px 25px; display: flex; align-items: center; gap: 15px; box-shadow: 0 0 20px rgba(56, 189, 248, 0.15); }
-        .ai-search-input { flex-grow: 1; background: transparent; border: none; color: white; font-size: 1.1rem; outline: none; font-family: 'Plus Jakarta Sans', sans-serif; }
-        .ai-search-input::placeholder { color: #64748b; }
-        .ai-search-btn { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #000; border: none; padding: 10px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .ai-response { width: 100%; background: rgba(56, 189, 248, 0.1); padding: 15px; border-radius: 10px; margin-top: 10px; display: none; font-size: 0.9rem; color: var(--primary); border-left: 4px solid var(--primary); line-height: 1.5; }
-
+        
         /* Split Screen Layout */
         .split-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
         
@@ -79,14 +73,7 @@
     </aside>
 
     <main>
-        <div>
-            <div class="ai-search-container">
-                <span style="font-size: 1.5rem;">✨</span>
-                <input type="text" id="aiQuery" class="ai-search-input" placeholder="Ask AI: 'Should I turn on the AC based on the temperature difference?'">
-                <button class="ai-search-btn" onclick="askAI()">Ask AI</button>
-            </div>
-            <div id="aiResponse" class="ai-response"></div>
-        </div>
+        
 
         <div class="split-layout">
             
