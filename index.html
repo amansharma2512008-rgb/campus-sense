@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Campus-Sense | AI & IoT Analytics</title>
     
     <meta name="theme-color" content="#020617">
@@ -24,19 +24,27 @@
             --accent-api: #ec4899;
         }
 
+        /* STRICT BOX SIZING & WIDTHS */
         * { transition: all 0.3s ease; box-sizing: border-box; }
-
-        body {
+        
+        html, body { 
+            margin: 0; 
+            padding: 0;
+            width: 100%; 
+            max-width: 100vw; /* Prevents absolutely any sideways stretching */
+            overflow-x: hidden; 
             font-family: 'Plus Jakarta Sans', sans-serif;
             background: radial-gradient(circle at top right, #1e1b4b, #020617);
             color: var(--text-main);
-            margin: 0;
-            display: grid;
-            grid-template-columns: 260px 1fr;
-            min-height: 100vh;
-            overflow: hidden; 
         }
 
+        body {
+            display: grid;
+            grid-template-columns: 260px minmax(0, 1fr); /* minmax(0, 1fr) is the magic fix for charts */
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
         .sidebar { background: rgba(15, 23, 42, 0.9); border-right: 1px solid rgba(255, 255, 255, 0.1); padding: 30px 20px; display: flex; flex-direction: column; z-index: 10; }
         .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 40px; }
         .nav-items { display: flex; flex-direction: column; gap: 10px; }
@@ -44,28 +52,25 @@
         .nav-item:hover { opacity: 1; background: rgba(255,255,255,0.05); }
         .nav-item.active { background: var(--primary); color: #000; opacity: 1; font-weight: 600; }
 
-        main { padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; height: 100vh;}
-        .split-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        /* Main Dashboard Area */
+        main { padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; height: 100vh; width: 100%; max-width: 100%;}
+        
+        /* Split Screen Layout - using minmax to prevent chart blowouts */
+        .split-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 30px; width: 100%; max-width: 100%; }
         
         .panel-header { font-size: 1.2rem; font-weight: 700; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .left-header { color: var(--primary); }
         .right-header { color: var(--accent-api); }
 
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 15px; margin-bottom: 20px; }
         .metric-card { background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; text-align: center; }
         .metric-card h3 { margin: 0; font-size: 0.8rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; }
         .metric-card .value { font-size: 2.2rem; font-weight: 700; margin: 10px 0; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        .chart-section { background: var(--card-bg); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        .chart-section { background: var(--card-bg); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; width: 100%; }
         .prediction-section { background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(129, 140, 248, 0.1)); border-radius: 16px; padding: 25px; border: 1px solid var(--accent-api); margin-bottom: 20px; }
         
-        /* Table Styles */
-        .table-wrapper { 
-            width: 100%; /* Ensure it doesn't stretch past the screen */
-            max-height: 250px; 
-            overflow-y: auto; 
-            overflow-x: auto; /* Let ONLY the table scroll sideways */
-        }
+        .table-wrapper { max-width: 100%; overflow-y: auto; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; min-width: 500px; }
         th { text-align: left; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; }
         td { padding: 10px; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -78,15 +83,15 @@
         .toast { background: rgba(15, 23, 42, 0.95); border-left: 4px solid var(--accent-danger); color: #fff; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 15px; }
         .toast.show { transform: translateX(0); }
 
-        /* Prevent full-page sideways sliding globally */
-        html, body { overflow-x: hidden; width: 100%; }
-
+        /* ========================================= */
+        /* MOBILE RESPONSIVENESS (PHONES & TABLETS)  */
+        /* ========================================= */
         @media (max-width: 900px) {
             body { 
-                grid-template-columns: 1fr; 
+                grid-template-columns: minmax(0, 1fr); 
                 grid-template-rows: auto 1fr; 
                 overflow-y: auto; 
-                overflow-x: hidden; 
+                overflow-x: hidden;
             }
             .sidebar { 
                 padding: 15px 20px; 
@@ -95,23 +100,33 @@
                 flex-direction: row; 
                 justify-content: space-between; 
                 align-items: center; 
-                flex-wrap: wrap; /* Prevent buttons from pushing out */
+                flex-wrap: wrap; 
             }
             .logo { margin-bottom: 0; font-size: 1.2rem; }
-            .nav-items { flex-direction: row; flex-wrap: wrap; gap: 5px; }
+            .nav-items { flex-direction: row; gap: 10px; flex-wrap: wrap; }
+            
             main { 
                 padding: 15px; 
                 height: auto; 
                 overflow-y: visible; 
                 overflow-x: hidden;
+                width: 100%;
             }
-            .split-layout { grid-template-columns: 1fr; width: 100%; }
+            .split-layout { 
+                grid-template-columns: minmax(0, 1fr); 
+                gap: 20px; 
+                width: 100%;
+            }
+            .chart-section, .prediction-section {
+                padding: 15px;
+            }
         }
 
-        /* Stack metric cards on very small screens (like iPhones) */
+        /* Stack metric cards on very small screens */
         @media (max-width: 450px) {
-            .dashboard-grid { grid-template-columns: 1fr; }
-            .nav-item { font-size: 0.8rem; padding: 8px 10px; }
+            .dashboard-grid { grid-template-columns: minmax(0, 1fr); }
+            .nav-item { font-size: 0.85rem; padding: 8px 10px; }
+            .panel-header { font-size: 1rem; flex-direction: column; align-items: flex-start !important; gap: 10px; }
         }
     </style>
 </head>
@@ -130,7 +145,7 @@
     <main>
         <div id="view-dashboard" class="split-layout">
             
-            <div class="left-panel">
+            <div class="left-panel" style="width: 100%; max-width: 100%;">
                 <div class="panel-header left-header">🏢 INDOOR: ESP32</div>
                 
                 <div class="dashboard-grid">
@@ -177,7 +192,7 @@
                 </div>
             </div>
 
-            <div class="right-panel">
+            <div class="right-panel" style="width: 100%; max-width: 100%;">
                 <div class="panel-header right-header">🌍 OUTDOOR: Weather API</div>
                 
                 <div class="dashboard-grid">
@@ -216,12 +231,12 @@
             </div>
         </div>
 
-        <div id="view-history" style="display: none; flex-direction: column; height: 100%;">
+        <div id="view-history" style="display: none; flex-direction: column; height: 100%; width: 100%;">
             <div class="panel-header left-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: none; flex-wrap: wrap; gap: 10px;">
                 <span>📂 HARDWARE & WEATHER LOGS</span>
-                <div>
-                    <button onclick="fetchAllHistory()" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">↻ Refresh</button>
-                    <button onclick="downloadCSV()" style="background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-left: 10px;">📥 Export CSV</button>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button onclick="fetchAllHistory()" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border); padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">↻ Refresh</button>
+                    <button onclick="downloadCSV()" style="background: var(--primary); color: #000; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">📥 Export CSV</button>
                 </div>
             </div>
             
@@ -233,7 +248,7 @@
             </div>
 
             <div class="chart-section" style="flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; padding: 0;">
-                <div style="overflow-x: auto; overflow-y: auto; height: 100%; padding: 20px;">
+                <div class="table-wrapper" style="height: 100%; padding: 20px;">
                     <table id="history-table">
                         <thead>
                             <tr>
@@ -262,11 +277,24 @@
     const viewDashboard = document.getElementById('view-dashboard');
     const viewHistory = document.getElementById('view-history');
 
+    function resizeGrid() {
+        if(window.innerWidth <= 900) { 
+            if(viewDashboard.style.display !== 'none') {
+                viewDashboard.style.display = 'grid';
+                viewDashboard.style.gridTemplateColumns = 'minmax(0, 1fr)'; 
+            }
+        } else { 
+            if(viewDashboard.style.display !== 'none') {
+                viewDashboard.style.display = 'grid';
+                viewDashboard.style.gridTemplateColumns = 'minmax(0, 1fr) minmax(0, 1fr)'; 
+            }
+        }
+    }
+
     navDashboard.addEventListener('click', () => {
         navDashboard.classList.add('active'); navHistory.classList.remove('active');
         viewDashboard.style.display = 'grid'; viewHistory.style.display = 'none';
-        if(window.innerWidth <= 900) { viewDashboard.style.gridTemplateColumns = '1fr'; } 
-        else { viewDashboard.style.gridTemplateColumns = '1fr 1fr'; }
+        resizeGrid();
     });
 
     navHistory.addEventListener('click', () => {
@@ -275,11 +303,7 @@
         fetchAllHistory(); 
     });
 
-    window.addEventListener('resize', () => {
-        if(viewDashboard.style.display !== 'none') {
-            viewDashboard.style.gridTemplateColumns = window.innerWidth <= 900 ? '1fr' : '1fr 1fr';
-        }
-    });
+    window.addEventListener('resize', resizeGrid);
 
     // --- ALERT SYSTEM ---
     let alertShown = false;
@@ -308,7 +332,6 @@
 
     // --- CSV EXPORT ---
     function downloadCSV() {
-        // Updated header to match Date and Time separately
         let csv = "Date,Time,Indoor Temp,Indoor Hum,Outdoor Temp,Outdoor Hum\n";
         const rows = document.querySelectorAll("#full-history-body tr");
         
@@ -365,10 +388,10 @@
     const comparisonChart = new Chart(document.getElementById('comparisonChart').getContext('2d'), {
         type: 'line',
         data: { labels: [], datasets: [
-            { label: 'Indoor Temp', borderColor: '#f43f5e', borderWidth: 2, pointRadius: 0, data: [], tension: 0.4 },
-            { label: 'Outdoor Temp', borderColor: '#ec4899', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, data: [], tension: 0.4 }
+            { label: 'Indoor', borderColor: '#f43f5e', borderWidth: 2, pointRadius: 0, data: [], tension: 0.4 },
+            { label: 'Outdoor', borderColor: '#ec4899', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, data: [], tension: 0.4 }
         ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, labels: { color: '#f8fafc' } } }, scales: { x: { display: false } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, labels: { color: '#f8fafc', boxWidth: 10 } } }, scales: { x: { display: false } } }
     });
 
     const historyChart = new Chart(document.getElementById('historyChart').getContext('2d'), {
@@ -383,8 +406,8 @@
         options: {
             responsive: true, maintainAspectRatio: false,
             scales: {
-                x: { title: { display: true, text: 'Temperature (°C)', color: '#94a3b8' } },
-                y: { title: { display: true, text: 'Humidity (%)', color: '#94a3b8' }, min: 0, max: 100 }
+                x: { title: { display: true, text: 'Temp (°C)', color: '#94a3b8' } },
+                y: { title: { display: true, text: 'Hum (%)', color: '#94a3b8' }, min: 0, max: 100 }
             },
             plugins: { legend: { display: false } }
         }
@@ -495,7 +518,6 @@
 
     async function fetchAllHistory() {
         const tableBody = document.getElementById('full-history-body');
-        // Updated to colspan 6
         tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading data...</td></tr>';
         
         try {
@@ -513,7 +535,6 @@
 
                     scatterData.push({ x: parseFloat(entry.temp), y: parseFloat(entry.hum) });
 
-                    // Putting date and time into their own separate <td> columns
                     rows += `<tr>
                         <td>${dateObj.toLocaleDateString()}</td>
                         <td>${dateObj.toLocaleTimeString()}</td>
