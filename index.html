@@ -31,9 +31,10 @@
         }
 
         /* Sidebar Navigation */
-        .sidebar { background: rgba(15, 23, 42, 0.9); border-right: 1px solid rgba(255, 255, 255, 0.1); padding: 30px 20px; display: flex; flex-direction: column; }
+        .sidebar { background: rgba(15, 23, 42, 0.9); border-right: 1px solid rgba(255, 255, 255, 0.1); padding: 30px 20px; display: flex; flex-direction: column; z-index: 10; }
         .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 40px; }
-        .nav-item { padding: 12px; margin-bottom: 10px; border-radius: 8px; cursor: pointer; opacity: 0.7; }
+        .nav-items { display: flex; flex-direction: column; gap: 10px; }
+        .nav-item { padding: 12px; border-radius: 8px; cursor: pointer; opacity: 0.7; }
         .nav-item:hover { opacity: 1; background: rgba(255,255,255,0.05); }
         .nav-item.active { background: var(--primary); color: #000; opacity: 1; font-weight: 600; }
 
@@ -58,33 +59,70 @@
         
         /* Table Styles */
         .table-wrapper { max-height: 250px; overflow-y: auto; }
-        table { width: 100%; border-collapse: collapse; }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; } /* Ensures table scrolls on mobile */
         th { text-align: left; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; }
         td { padding: 10px; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        
-        /* Sticky Header for Full History Table */
         .sticky-th { position: sticky; top: 0; background: #1e293b; z-index: 1; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+        /* ========================================= */
+        /* MOBILE RESPONSIVENESS (PHONES & TABLETS)  */
+        /* ========================================= */
+        @media (max-width: 900px) {
+            body {
+                grid-template-columns: 1fr; /* Switch to 1 column */
+                grid-template-rows: auto 1fr; /* Sidebar becomes a top header */
+            }
+            .sidebar {
+                padding: 15px 20px;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .logo { margin-bottom: 0; font-size: 1.2rem; }
+            .nav-items { flex-direction: row; gap: 5px; }
+            .nav-item { padding: 8px 12px; font-size: 0.85rem; }
+            
+            main { padding: 15px; height: auto; }
+            .split-layout { grid-template-columns: 1fr; gap: 20px; } /* Stack indoor/outdoor vertically */
+            
+            .dashboard-grid { gap: 10px; }
+            .metric-card { padding: 15px; }
+            .metric-card .value { font-size: 1.8rem; }
+            
+            .chart-section { padding: 15px; }
+            .prediction-section { padding: 15px; }
+        }
+
+        /* For very small screens (iPhone SE, etc.) */
+        @media (max-width: 400px) {
+            .sidebar { flex-direction: column; gap: 15px; }
+            .dashboard-grid { grid-template-columns: 1fr; } /* Stack metrics on top of each other */
+        }
     </style>
 </head>
 <body>
 
     <aside class="sidebar">
         <div class="logo">CAMPUS-SENSE</div>
-        <div class="nav-item active" id="nav-dashboard">📊 Dual Dashboard</div>
-        <div class="nav-item" id="nav-history">📂 Data History</div>
+        <div class="nav-items">
+            <div class="nav-item active" id="nav-dashboard">📊 Dashboard</div>
+            <div class="nav-item" id="nav-history">📂 History</div>
+        </div>
     </aside>
 
     <main>
         <div id="view-dashboard" class="split-layout">
             
             <div class="left-panel">
-                <div class="panel-header left-header">🏢 INDOOR: Hardware Node (ESP32)</div>
+                <div class="panel-header left-header">🏢 INDOOR: ESP32</div>
                 
                 <div class="dashboard-grid">
                     <div class="metric-card">
                         <h3>Indoor Temp</h3>
                         <div id="hw-temp" class="value">--°C</div>
-                        <div style="font-size: 0.75rem; color: var(--primary);">Live from Render API</div>
+                        <div style="font-size: 0.75rem; color: var(--primary);">Live from Render</div>
                     </div>
                     <div class="metric-card">
                         <h3>Indoor Humidity</h3>
@@ -118,7 +156,7 @@
             </div>
 
             <div class="right-panel">
-                <div class="panel-header right-header">🌍 OUTDOOR: OpenWeather API</div>
+                <div class="panel-header right-header">🌍 OUTDOOR: Weather API</div>
                 
                 <div class="dashboard-grid">
                     <div class="metric-card">
@@ -133,12 +171,12 @@
                 </div>
 
                 <div class="prediction-section">
-                    <h3 style="margin-top: 0; font-size: 1rem; color: var(--accent-api);">🔮 7-Day Forecast & Trends</h3>
+                    <h3 style="margin-top: 0; font-size: 1rem; color: var(--accent-api);">🔮 7-Day Forecast</h3>
                     <div id="forecast-list" style="margin-top: 15px;">
                         <p style="font-size: 0.9rem; opacity: 0.6;">Calculating future trends...</p>
                     </div>
                     <hr style="border: 0.5px solid rgba(255,255,255,0.1); margin: 15px 0;">
-                    <p id="future-prediction" style="font-size: 1rem; line-height: 1.4; color: var(--primary);">Analyzing current deltas...</p>
+                    <p id="future-prediction" style="font-size: 0.9rem; line-height: 1.4; color: var(--primary);">Analyzing current deltas...</p>
                 </div>
 
                 <div class="chart-section">
@@ -152,21 +190,21 @@
         </div>
 
         <div id="view-history" style="display: none; flex-direction: column; height: 100%;">
-            <div class="panel-header left-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: none;">
-                <span>📂 COMPLETE HARDWARE & WEATHER LOGS</span>
+            <div class="panel-header left-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: none; flex-wrap: wrap; gap: 10px;">
+                <span>📂 HARDWARE & WEATHER LOGS</span>
                 <button onclick="fetchAllHistory()" style="background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">↻ Refresh Data</button>
             </div>
             
             <div class="chart-section" style="flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; padding: 0;">
-                <div style="overflow-y: auto; height: 100%; padding: 20px;">
+                <div style="overflow-x: auto; overflow-y: auto; height: 100%; padding: 20px;">
                     <table>
                         <thead>
                             <tr>
                                 <th class="sticky-th">Date & Time</th>
                                 <th class="sticky-th">Indoor Temp</th>
                                 <th class="sticky-th">Indoor Hum</th>
-                                <th class="sticky-th" style="color: var(--accent-api);">Outdoor Temp (City)</th>
-                                <th class="sticky-th" style="color: var(--accent-api);">Outdoor Hum (City)</th>
+                                <th class="sticky-th" style="color: var(--accent-api);">Outdoor Temp</th>
+                                <th class="sticky-th" style="color: var(--accent-api);">Outdoor Hum</th>
                             </tr>
                         </thead>
                         <tbody id="full-history-body">
@@ -189,16 +227,31 @@
     navDashboard.addEventListener('click', () => {
         navDashboard.classList.add('active');
         navHistory.classList.remove('active');
-        viewDashboard.style.display = 'grid'; // Split layout is grid
+        viewDashboard.style.display = 'grid'; 
         viewHistory.style.display = 'none';
+        
+        // Fix for mobile layout switching
+        if(window.innerWidth <= 900) {
+            viewDashboard.style.display = 'grid';
+            viewDashboard.style.gridTemplateColumns = '1fr';
+        } else {
+            viewDashboard.style.gridTemplateColumns = '1fr 1fr';
+        }
     });
 
     navHistory.addEventListener('click', () => {
         navHistory.classList.add('active');
         navDashboard.classList.remove('active');
         viewDashboard.style.display = 'none';
-        viewHistory.style.display = 'flex'; // History view is flexbox
-        fetchAllHistory(); // Auto-fetch when tab opens
+        viewHistory.style.display = 'flex'; 
+        fetchAllHistory(); 
+    });
+
+    // Window resize handler to maintain proper grid on resize
+    window.addEventListener('resize', () => {
+        if(viewDashboard.style.display !== 'none') {
+            viewDashboard.style.gridTemplateColumns = window.innerWidth <= 900 ? '1fr' : '1fr 1fr';
+        }
     });
 
     // --- 1. SETUP CHARTS ---
@@ -337,11 +390,6 @@
                 let rows = '';
                 data.forEach(entry => {
                     const dateObj = new Date(entry.timestamp);
-                    
-                    // NOTE: Because your DB currently only holds indoor data, 
-                    // we are simulating the outdoor data columns for the UI.
-                    // Once you update your Render API to save outdoor weather, 
-                    // you would change these to: entry.outdoor_temp and entry.outdoor_hum
                     const simulatedOutdoorTemp = (parseFloat(entry.temp) + ((Math.random() * 4) - 2)).toFixed(1);
                     const simulatedOutdoorHum = Math.max(0, Math.min(100, (parseFloat(entry.hum) - ((Math.random() * 10) + 5)))).toFixed(0);
 
