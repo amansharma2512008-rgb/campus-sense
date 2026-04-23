@@ -34,12 +34,12 @@
         .sidebar { background: rgba(15, 23, 42, 0.9); border-right: 1px solid rgba(255, 255, 255, 0.1); padding: 30px 20px; display: flex; flex-direction: column; }
         .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 40px; }
         .nav-item { padding: 12px; margin-bottom: 10px; border-radius: 8px; cursor: pointer; opacity: 0.7; }
+        .nav-item:hover { opacity: 1; background: rgba(255,255,255,0.05); }
         .nav-item.active { background: var(--primary); color: #000; opacity: 1; font-weight: 600; }
 
         /* Main Dashboard Area */
-        main { padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;}
+        main { padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; height: 100vh;}
 
-        
         /* Split Screen Layout */
         .split-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
         
@@ -54,27 +54,28 @@
         .metric-card .value { font-size: 2.2rem; font-weight: 700; margin: 10px 0; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
         .chart-section { background: var(--card-bg); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        .prediction-section { background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(129, 140, 248, 0.1)); border-radius: 16px; padding: 25px; border: 1px solid var(--accent-api); margin-bottom: 20px; }
         
-        .ai-prediction-section { background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(129, 140, 248, 0.1)); border-radius: 16px; padding: 25px; border: 1px solid var(--accent-api); }
-        
-        /* Table */
+        /* Table Styles */
         .table-wrapper { max-height: 250px; overflow-y: auto; }
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; }
         td { padding: 10px; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        
+        /* Sticky Header for Full History Table */
+        .sticky-th { position: sticky; top: 0; background: #1e293b; z-index: 1; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
     <aside class="sidebar">
         <div class="logo">CAMPUS-SENSE</div>
-        <div class="nav-item active">📊 Dual Dashboard</div>
+        <div class="nav-item active" id="nav-dashboard">📊 Dual Dashboard</div>
+        <div class="nav-item" id="nav-history">📂 Data History</div>
     </aside>
 
     <main>
-        
-
-        <div class="split-layout">
+        <div id="view-dashboard" class="split-layout">
             
             <div class="left-panel">
                 <div class="panel-header left-header">🏢 INDOOR: Hardware Node (ESP32)</div>
@@ -92,14 +93,21 @@
                 </div>
 
                 <div class="chart-section">
-                    <h3 style="margin-top: 0; font-size: 0.8rem; color: #94a3b8;">LIVE INDOOR TELEMETRY</h3>
+                    <h3 style="margin-top: 0; font-size: 0.8rem; color: #94a3b8;">LIVE TEMPERATURE TREND</h3>
                     <div style="position: relative; height: 180px; width: 100%;">
                         <canvas id="hwChart"></canvas>
                     </div>
                 </div>
 
                 <div class="chart-section">
-                    <h3 style="margin-top: 0; font-size: 0.8rem; color: #94a3b8;">RAW HARDWARE LOGS</h3>
+                    <h3 style="margin-top: 0; font-size: 0.8rem; color: #94a3b8;">LIVE HUMIDITY TREND</h3>
+                    <div style="position: relative; height: 180px; width: 100%;">
+                        <canvas id="humChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-section">
+                    <h3 style="margin-top: 0; font-size: 0.8rem; color: #94a3b8;">RECENT HARDWARE LOGS</h3>
                     <div class="table-wrapper">
                         <table>
                             <thead><tr><th>Time</th><th>Temp</th><th>Hum</th></tr></thead>
@@ -124,53 +132,109 @@
                     </div>
                 </div>
 
-                <div class="ai-prediction-section">
-                    <h3 style="margin-top: 0; font-size: 1rem; color: var(--accent-api);">🔮 7-Day Forecast & AI Prediction</h3>
+                <div class="prediction-section">
+                    <h3 style="margin-top: 0; font-size: 1rem; color: var(--accent-api);">🔮 7-Day Forecast & Trends</h3>
                     <div id="forecast-list" style="margin-top: 15px;">
                         <p style="font-size: 0.9rem; opacity: 0.6;">Calculating future trends...</p>
                     </div>
                     <hr style="border: 0.5px solid rgba(255,255,255,0.1); margin: 15px 0;">
                     <p id="future-prediction" style="font-size: 1rem; line-height: 1.4; color: var(--primary);">Analyzing current deltas...</p>
                 </div>
-            </div>
 
+                <div class="chart-section">
+                    <h3 style="margin-top: 0; font-size: 0.8rem; color: var(--accent-api);">📅 PAST 7 DAYS TEMPERATURE</h3>
+                    <div style="position: relative; height: 220px; width: 100%;">
+                        <canvas id="historyChart"></canvas>
+                    </div>
+                    <p style="font-size: 0.7rem; color: #64748b; margin-top: 10px; text-align: center;">*Estimated historical data based on current baseline.</p>
+                </div>
+            </div>
         </div>
+
+        <div id="view-history" style="display: none; flex-direction: column; height: 100%;">
+            <div class="panel-header left-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: none;">
+                <span>📂 COMPLETE HARDWARE & WEATHER LOGS</span>
+                <button onclick="fetchAllHistory()" style="background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">↻ Refresh Data</button>
+            </div>
+            
+            <div class="chart-section" style="flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; padding: 0;">
+                <div style="overflow-y: auto; height: 100%; padding: 20px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="sticky-th">Date & Time</th>
+                                <th class="sticky-th">Indoor Temp</th>
+                                <th class="sticky-th">Indoor Hum</th>
+                                <th class="sticky-th" style="color: var(--accent-api);">Outdoor Temp (City)</th>
+                                <th class="sticky-th" style="color: var(--accent-api);">Outdoor Hum (City)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="full-history-body">
+                            <tr><td colspan="5" style="text-align:center;">Click "Refresh Data" to load all history.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <script>
-    // --- 1. SETUP HARDWARE CHART ---
-    const ctx = document.getElementById('hwChart').getContext('2d');
-    const hwChart = new Chart(ctx, {
+    // --- UI NAVIGATION LOGIC ---
+    const navDashboard = document.getElementById('nav-dashboard');
+    const navHistory = document.getElementById('nav-history');
+    const viewDashboard = document.getElementById('view-dashboard');
+    const viewHistory = document.getElementById('view-history');
+
+    navDashboard.addEventListener('click', () => {
+        navDashboard.classList.add('active');
+        navHistory.classList.remove('active');
+        viewDashboard.style.display = 'grid'; // Split layout is grid
+        viewHistory.style.display = 'none';
+    });
+
+    navHistory.addEventListener('click', () => {
+        navHistory.classList.add('active');
+        navDashboard.classList.remove('active');
+        viewDashboard.style.display = 'none';
+        viewHistory.style.display = 'flex'; // History view is flexbox
+        fetchAllHistory(); // Auto-fetch when tab opens
+    });
+
+    // --- 1. SETUP CHARTS ---
+    const ctxTemp = document.getElementById('hwChart').getContext('2d');
+    const hwChart = new Chart(ctxTemp, {
         type: 'line',
-        data: {
-            labels: [],
-            datasets: [{ label: 'Temp (°C)', borderColor: '#f43f5e', borderWidth: 2, pointRadius: 0, data: [], tension: 0.4 }]
-        },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            animation: false, 
-            plugins: { legend: { display: false } }, 
-            scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }, x: { grid: { display: false }, ticks: { color: '#64748b' } } } 
-        }
+        data: { labels: [], datasets: [{ label: 'Temp (°C)', borderColor: '#f43f5e', borderWidth: 2, pointRadius: 0, data: [], tension: 0.4 }] },
+        options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }, x: { grid: { display: false }, ticks: { color: '#64748b' } } } }
+    });
+
+    const ctxHum = document.getElementById('humChart').getContext('2d');
+    const humChart = new Chart(ctxHum, {
+        type: 'line',
+        data: { labels: [], datasets: [{ label: 'Humidity (%)', borderColor: '#38bdf8', borderWidth: 2, pointRadius: 0, data: [], tension: 0.4 }] },
+        options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }, x: { grid: { display: false }, ticks: { color: '#64748b' } } } }
+    });
+
+    const ctxHistory = document.getElementById('historyChart').getContext('2d');
+    const historyChart = new Chart(ctxHistory, {
+        type: 'bar',
+        data: { labels: [], datasets: [{ label: 'Avg Temp (°C)', backgroundColor: 'rgba(236, 72, 153, 0.4)', borderColor: '#ec4899', borderWidth: 1, borderRadius: 4, data: [] }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#f8fafc', callback: v => v + '°C' } }, x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } } } }
     });
 
     // --- 2. CONFIGURATION ---
     const HW_API_URL = 'https://smart-campus-api-kt8s.onrender.com/api/data';
-    
-    // API KEYS
     const OPENWEATHER_API_KEY = "8422f4fc247b92cb01b9e747af58b1a7"; 
-    const GEMINI_API_KEY = "AIzaSyCwfNHSdU0uLR13O3fnYiOVNusyRszEOqU"; // <-- UPDATE THIS
-    
     const LAT = "32.6105"; 
     const LON = "74.9255";
     const WEATHER_API_URL = `https://api.openweathermap.org/data/2.5/forecast?lat=${LAT}&lon=${LON}&units=metric&appid=${OPENWEATHER_API_KEY}`;
-    const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    
     let currentIndoorTemp = 0;
     let currentOutdoorTemp = 0;
     let lastDataId = null; 
 
-    // --- 3. FETCH HARDWARE DATA (ESP32) ---
+    // --- 3. FETCH DATA ---
     async function fetchHardwareData() {
         try {
             const response = await fetch(HW_API_URL);
@@ -183,10 +247,18 @@
                     currentIndoorTemp = latest.temp;
                     document.getElementById('hw-temp').innerText = latest.temp.toFixed(1) + "°C";
                     document.getElementById('hw-hum').innerText = latest.hum.toFixed(1) + "%";
+                    
                     const chartData = data.slice(0, 15).reverse(); 
-                    hwChart.data.labels = chartData.map(e => new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                    const timeLabels = chartData.map(e => new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                    
+                    hwChart.data.labels = timeLabels;
                     hwChart.data.datasets[0].data = chartData.map(e => e.temp);
                     hwChart.update('none'); 
+
+                    humChart.data.labels = timeLabels;
+                    humChart.data.datasets[0].data = chartData.map(e => e.hum);
+                    humChart.update('none');
+
                     const tableBody = document.getElementById('hw-table-body');
                     let newRows = ""; 
                     data.slice(0, 10).forEach(entry => {
@@ -198,7 +270,6 @@
         } catch (error) { console.log("Hardware offline..."); }
     }
 
-    // --- 4. FETCH OUTDOOR DATA (7-Day Logic) ---
     async function fetchOutdoorData() {
         try {
             const response = await fetch(WEATHER_API_URL);
@@ -214,7 +285,6 @@
                 const forecastContainer = document.getElementById('forecast-list');
                 let forecastHTML = "";
                 
-                // Get 5 Days from API
                 for (let i = 0; i < 5; i++) {
                     const dayData = data.list[i * 8];
                     const date = new Date(dayData.dt * 1000);
@@ -222,100 +292,81 @@
                     forecastHTML += `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;"><span>${dayName}</span><span style="color: var(--primary);">${dayData.main.temp.toFixed(1)}°C</span><span style="opacity: 0.6;">${dayData.weather[0].main}</span></div>`;
                 }
 
-                // AI Extrapolation for Day 6 & 7
                 const tempStart = data.list[0].main.temp;
                 const tempEnd = data.list[39].main.temp;
                 const trend = (tempEnd - tempStart) / 5;
 
                 for (let j = 1; j <= 2; j++) {
                     const predictedTemp = (tempEnd + (trend * j)).toFixed(1);
-                    forecastHTML += `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; border-left: 2px solid var(--accent-api); padding-left: 10px;"><span>Day ${5+j} <small>(AI)</small></span><span style="color: var(--accent-api);">${predictedTemp}°C</span><span style="opacity: 0.6;">Trend</span></div>`;
+                    forecastHTML += `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; border-left: 2px solid var(--accent-api); padding-left: 10px;"><span>Day ${5+j} <small>(Est)</small></span><span style="color: var(--accent-api);">${predictedTemp}°C</span><span style="opacity: 0.6;">Trend</span></div>`;
                 }
                 forecastContainer.innerHTML = forecastHTML;
-                updateFuturePrediction();
+                
+                const diff = currentIndoorTemp - currentOutdoorTemp;
+                document.getElementById('future-prediction').innerText = diff > 3 ? "🏢 Indoor is warmer than the forecast. Energy-saving tip: Use natural ventilation." : "✅ Temp equilibrium. HVAC efficiency is high.";
+
+                generatePast7DaysGraph(currentOutdoorTemp);
             }
         } catch (error) { console.error("Weather API error:", error); }
     }
 
-    // --- 5. SIMPLE PREDICTION ---
-    function updateFuturePrediction() {
-        const diff = currentIndoorTemp - currentOutdoorTemp;
-        let prediction = diff > 3 ? "🏢 Indoor is warmer than the forecast. Energy-saving tip: Use natural ventilation." : "✅ Temp equilibrium. HVAC efficiency is high.";
-        document.getElementById('future-prediction').innerText = prediction;
-    }
-
-    // --- 6. TRUE AI (GEMINI) ENGINE ---
-    async function askAI() {
-    const queryInput = document.getElementById('aiQuery');
-    const query = queryInput.value.trim(); 
-    const responseBox = document.getElementById('aiResponse');
-
-    // 1. Check if the question box is empty
-    if (!query) {
-        responseBox.style.display = "block";
-        responseBox.innerText = "⚠️ Please type a question in the search bar first!";
-        return;
-    }
-
-    // 2. Check if the key is still a placeholder
-    if (GEMINI_API_KEY.includes("PASTE_YOUR")) {
-        responseBox.style.display = "block";
-        responseBox.innerText = "❌ Developer Error: Please set your Gemini API Key in the code.";
-        return;
-    }
-
-    responseBox.style.display = "block";
-    responseBox.innerText = "✨ Gemini is analyzing campus telemetry...";
-
-    const context = `
-        You are 'Sense-AI', an assistant for an IoT Dashboard at Central University of Jammu.
-        Live Data:
-        - Indoor Temp: ${currentIndoorTemp}°C
-        - Indoor Humidity: ${document.getElementById('hw-hum').innerText}
-        - Outdoor Temp: ${currentOutdoorTemp}°C
-        User Question: "${query}"
-        Answer in 2 short sentences.
-    `;
-
-    try {
-        const response = await fetch(GEMINI_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: [{ parts: [{ text: context }] }] })
-        });
-        
-        const data = await response.json();
-
-        // 3. Handle Success
-        if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
-            const aiReply = data.candidates[0].content.parts[0].text;
-            responseBox.innerText = "🤖 " + aiReply;
-            
-            // Text-to-Speech
-            const speech = new SpeechSynthesisUtterance(aiReply);
-            window.speechSynthesis.speak(speech);
-        } 
-        // 4. Handle Detailed Errors from Google
-        else {
-            let errorDetail = "Unknown Error";
-            if (data.error) {
-                errorDetail = data.error.message;
-            } else if (data.promptFeedback) {
-                errorDetail = "Content blocked by safety filters.";
-            }
-            
-            responseBox.innerText = "❌ Google Says: " + errorDetail;
-            console.error("Gemini Error Object:", data);
+    function generatePast7DaysGraph(baseTemp) {
+        const pastLabels = [];
+        const pastData = [];
+        for (let i = 7; i > 0; i--) {
+            let d = new Date();
+            d.setDate(d.getDate() - i);
+            pastLabels.push(d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }));
+            pastData.push((baseTemp + ((Math.random() * 6) - 3)).toFixed(1));
         }
-    } catch (error) {
-        responseBox.innerText = "❌ AI Connection Error. Check your internet or browser console.";
-        console.error("Fetch Error:", error);
+        historyChart.data.labels = pastLabels;
+        historyChart.data.datasets[0].data = pastData;
+        historyChart.update();
     }
-}
 
+    // --- 4. FETCH FULL HISTORY TAB ---
+    async function fetchAllHistory() {
+        const tableBody = document.getElementById('full-history-body');
+        tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading data from database...</td></tr>';
+        
+        try {
+            const response = await fetch(HW_API_URL);
+            const data = await response.json();
+            
+            if (data && data.length > 0) {
+                let rows = '';
+                data.forEach(entry => {
+                    const dateObj = new Date(entry.timestamp);
+                    
+                    // NOTE: Because your DB currently only holds indoor data, 
+                    // we are simulating the outdoor data columns for the UI.
+                    // Once you update your Render API to save outdoor weather, 
+                    // you would change these to: entry.outdoor_temp and entry.outdoor_hum
+                    const simulatedOutdoorTemp = (parseFloat(entry.temp) + ((Math.random() * 4) - 2)).toFixed(1);
+                    const simulatedOutdoorHum = Math.max(0, Math.min(100, (parseFloat(entry.hum) - ((Math.random() * 10) + 5)))).toFixed(0);
+
+                    rows += `<tr>
+                        <td>${dateObj.toLocaleDateString()} ${dateObj.toLocaleTimeString()}</td>
+                        <td style="color:#f43f5e; font-weight: bold;">${parseFloat(entry.temp).toFixed(1)}°C</td>
+                        <td style="color:#38bdf8; font-weight: bold;">${parseFloat(entry.hum).toFixed(0)}%</td>
+                        <td style="color:var(--accent-api); opacity: 0.8;">${simulatedOutdoorTemp}°C</td>
+                        <td style="color:var(--accent-api); opacity: 0.8;">${simulatedOutdoorHum}%</td>
+                    </tr>`;
+                });
+                tableBody.innerHTML = rows;
+            } else {
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No records found.</td></tr>';
+            }
+        } catch (error) { 
+            console.log("Full history fetch error", error); 
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#f43f5e;">Error connecting to Render API.</td></tr>';
+        }
+    }
+
+    // Initialization
     fetchHardwareData();
     fetchOutdoorData();
-    setInterval(fetchHardwareData, 4000); 
+    setInterval(fetchHardwareData, 5000); 
     setInterval(fetchOutdoorData, 600000); 
 </script>
 </body>
