@@ -73,11 +73,26 @@
         .toast.show { transform: translateX(0); }
 
         @media (max-width: 900px) {
-            body { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-            .sidebar { padding: 15px 20px; border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1); flex-direction: row; justify-content: space-between; align-items: center; }
+            body { 
+                grid-template-columns: 1fr; 
+                grid-template-rows: auto 1fr; 
+                overflow-y: auto; /* <-- THIS FIXES THE MOBILE SCROLLING */
+            }
+            .sidebar { 
+                padding: 15px 20px; 
+                border-right: none; 
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+                flex-direction: row; 
+                justify-content: space-between; 
+                align-items: center; 
+            }
             .logo { margin-bottom: 0; font-size: 1.2rem; }
             .nav-items { flex-direction: row; gap: 5px; }
-            main { padding: 15px; height: auto; }
+            main { 
+                padding: 15px; 
+                height: auto; 
+                overflow-y: visible; /* <-- PREVENTS DOUBLE SCROLLBARS */
+            }
             .split-layout { grid-template-columns: 1fr; }
         }
     </style>
