@@ -30,7 +30,6 @@
             min-height: 100vh;
         }
 
-        /* Sidebar Navigation */
         .sidebar { background: rgba(15, 23, 42, 0.9); border-right: 1px solid rgba(255, 255, 255, 0.1); padding: 30px 20px; display: flex; flex-direction: column; z-index: 10; }
         .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 40px; }
         .nav-items { display: flex; flex-direction: column; gap: 10px; }
@@ -38,67 +37,37 @@
         .nav-item:hover { opacity: 1; background: rgba(255,255,255,0.05); }
         .nav-item.active { background: var(--primary); color: #000; opacity: 1; font-weight: 600; }
 
-        /* Main Dashboard Area */
         main { padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; height: 100vh;}
-
-        /* Split Screen Layout */
         .split-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
         
         .panel-header { font-size: 1.2rem; font-weight: 700; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .left-header { color: var(--primary); }
         .right-header { color: var(--accent-api); }
 
-        /* Cards and Elements */
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .metric-card { background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; }
+        .metric-card { background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; text-align: center; }
         .metric-card h3 { margin: 0; font-size: 0.8rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; }
         .metric-card .value { font-size: 2.2rem; font-weight: 700; margin: 10px 0; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
         .chart-section { background: var(--card-bg); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
         .prediction-section { background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(129, 140, 248, 0.1)); border-radius: 16px; padding: 25px; border: 1px solid var(--accent-api); margin-bottom: 20px; }
         
-        /* Table Styles */
         .table-wrapper { max-height: 250px; overflow-y: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 500px; } /* Ensures table scrolls on mobile */
+        table { width: 100%; border-collapse: collapse; min-width: 500px; }
         th { text-align: left; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; }
         td { padding: 10px; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .sticky-th { position: sticky; top: 0; background: #1e293b; z-index: 1; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
-        /* ========================================= */
-        /* MOBILE RESPONSIVENESS (PHONES & TABLETS)  */
-        /* ========================================= */
+        .gauge-container { position: relative; height: 120px; display: flex; justify-content: center; align-items: flex-end; }
+        .gauge-text { position: absolute; bottom: 0; text-align: center; width: 100%; font-weight: bold; font-size: 1.2rem; }
+
         @media (max-width: 900px) {
-            body {
-                grid-template-columns: 1fr; /* Switch to 1 column */
-                grid-template-rows: auto 1fr; /* Sidebar becomes a top header */
-            }
-            .sidebar {
-                padding: 15px 20px;
-                border-right: none;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-            }
+            body { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+            .sidebar { padding: 15px 20px; border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1); flex-direction: row; justify-content: space-between; align-items: center; }
             .logo { margin-bottom: 0; font-size: 1.2rem; }
             .nav-items { flex-direction: row; gap: 5px; }
-            .nav-item { padding: 8px 12px; font-size: 0.85rem; }
-            
             main { padding: 15px; height: auto; }
-            .split-layout { grid-template-columns: 1fr; gap: 20px; } /* Stack indoor/outdoor vertically */
-            
-            .dashboard-grid { gap: 10px; }
-            .metric-card { padding: 15px; }
-            .metric-card .value { font-size: 1.8rem; }
-            
-            .chart-section { padding: 15px; }
-            .prediction-section { padding: 15px; }
-        }
-
-        /* For very small screens (iPhone SE, etc.) */
-        @media (max-width: 400px) {
-            .sidebar { flex-direction: column; gap: 15px; }
-            .dashboard-grid { grid-template-columns: 1fr; } /* Stack metrics on top of each other */
+            .split-layout { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -122,7 +91,6 @@
                     <div class="metric-card">
                         <h3>Indoor Temp</h3>
                         <div id="hw-temp" class="value">--°C</div>
-                        <div style="font-size: 0.75rem; color: var(--primary);">Live from Render</div>
                     </div>
                     <div class="metric-card">
                         <h3>Indoor Humidity</h3>
@@ -130,16 +98,24 @@
                     </div>
                 </div>
 
+                <div class="chart-section" style="padding-bottom: 10px;">
+                    <h3 style="margin-top: 0; font-size: 0.8rem; color: #94a3b8; text-align: center;">COMFORT ZONE GAUGE</h3>
+                    <div class="gauge-container">
+                        <canvas id="comfortGauge"></canvas>
+                        <div class="gauge-text" id="gauge-status" style="color: var(--accent-success);">Optimal</div>
+                    </div>
+                </div>
+
                 <div class="chart-section">
                     <h3 style="margin-top: 0; font-size: 0.8rem; color: #94a3b8;">LIVE TEMPERATURE TREND</h3>
-                    <div style="position: relative; height: 180px; width: 100%;">
+                    <div style="position: relative; height: 160px; width: 100%;">
                         <canvas id="hwChart"></canvas>
                     </div>
                 </div>
 
                 <div class="chart-section">
                     <h3 style="margin-top: 0; font-size: 0.8rem; color: #94a3b8;">LIVE HUMIDITY TREND</h3>
-                    <div style="position: relative; height: 180px; width: 100%;">
+                    <div style="position: relative; height: 140px; width: 100%;">
                         <canvas id="humChart"></canvas>
                     </div>
                 </div>
@@ -170,21 +146,26 @@
                     </div>
                 </div>
 
+                <div class="chart-section">
+                    <h3 style="margin-top: 0; font-size: 0.8rem; color: var(--accent-api);">📊 INDOOR VS OUTDOOR COMPARISON</h3>
+                    <div style="position: relative; height: 180px; width: 100%;">
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                    <p style="font-size: 0.7rem; color: #64748b; margin-top: 10px; text-align: center;">Testing building insulation efficiency over time.</p>
+                </div>
+
                 <div class="prediction-section">
                     <h3 style="margin-top: 0; font-size: 1rem; color: var(--accent-api);">🔮 7-Day Forecast</h3>
-                    <div id="forecast-list" style="margin-top: 15px;">
-                        <p style="font-size: 0.9rem; opacity: 0.6;">Calculating future trends...</p>
-                    </div>
+                    <div id="forecast-list" style="margin-top: 15px;"></div>
                     <hr style="border: 0.5px solid rgba(255,255,255,0.1); margin: 15px 0;">
                     <p id="future-prediction" style="font-size: 0.9rem; line-height: 1.4; color: var(--primary);">Analyzing current deltas...</p>
                 </div>
 
                 <div class="chart-section">
                     <h3 style="margin-top: 0; font-size: 0.8rem; color: var(--accent-api);">📅 PAST 7 DAYS TEMPERATURE</h3>
-                    <div style="position: relative; height: 220px; width: 100%;">
+                    <div style="position: relative; height: 200px; width: 100%;">
                         <canvas id="historyChart"></canvas>
                     </div>
-                    <p style="font-size: 0.7rem; color: #64748b; margin-top: 10px; text-align: center;">*Estimated historical data based on current baseline.</p>
                 </div>
             </div>
         </div>
@@ -195,6 +176,13 @@
                 <button onclick="fetchAllHistory()" style="background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">↻ Refresh Data</button>
             </div>
             
+            <div class="chart-section">
+                <h3 style="margin-top: 0; font-size: 0.8rem; color: var(--secondary); text-align: center;">📈 CORRELATION: TEMPERATURE VS HUMIDITY</h3>
+                <div style="position: relative; height: 250px; width: 100%;">
+                    <canvas id="scatterChart"></canvas>
+                </div>
+            </div>
+
             <div class="chart-section" style="flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; padding: 0;">
                 <div style="overflow-x: auto; overflow-y: auto; height: 100%; padding: 20px;">
                     <table>
@@ -225,58 +213,76 @@
     const viewHistory = document.getElementById('view-history');
 
     navDashboard.addEventListener('click', () => {
-        navDashboard.classList.add('active');
-        navHistory.classList.remove('active');
-        viewDashboard.style.display = 'grid'; 
-        viewHistory.style.display = 'none';
-        
-        // Fix for mobile layout switching
-        if(window.innerWidth <= 900) {
-            viewDashboard.style.display = 'grid';
-            viewDashboard.style.gridTemplateColumns = '1fr';
-        } else {
-            viewDashboard.style.gridTemplateColumns = '1fr 1fr';
-        }
+        navDashboard.classList.add('active'); navHistory.classList.remove('active');
+        viewDashboard.style.display = 'grid'; viewHistory.style.display = 'none';
+        if(window.innerWidth <= 900) { viewDashboard.style.gridTemplateColumns = '1fr'; } 
+        else { viewDashboard.style.gridTemplateColumns = '1fr 1fr'; }
     });
 
     navHistory.addEventListener('click', () => {
-        navHistory.classList.add('active');
-        navDashboard.classList.remove('active');
-        viewDashboard.style.display = 'none';
-        viewHistory.style.display = 'flex'; 
+        navHistory.classList.add('active'); navDashboard.classList.remove('active');
+        viewDashboard.style.display = 'none'; viewHistory.style.display = 'flex'; 
         fetchAllHistory(); 
     });
 
-    // Window resize handler to maintain proper grid on resize
     window.addEventListener('resize', () => {
         if(viewDashboard.style.display !== 'none') {
             viewDashboard.style.gridTemplateColumns = window.innerWidth <= 900 ? '1fr' : '1fr 1fr';
         }
     });
 
-    // --- 1. SETUP CHARTS ---
-    const ctxTemp = document.getElementById('hwChart').getContext('2d');
-    const hwChart = new Chart(ctxTemp, {
+    // --- CHART CONFIGURATIONS ---
+    Chart.defaults.color = '#64748b';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+
+    const comfortGauge = new Chart(document.getElementById('comfortGauge').getContext('2d'), {
+        type: 'doughnut',
+        data: { labels: ['Current Temp', 'Remaining'], datasets: [{ data: [0, 50], backgroundColor: ['#22c55e', '#1e293b'], borderWidth: 0 }] },
+        options: { rotation: -90, circumference: 180, cutout: '80%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+    });
+
+    // RESTORED: Standard Live Temperature Trend
+    const hwChart = new Chart(document.getElementById('hwChart').getContext('2d'), {
         type: 'line',
         data: { labels: [], datasets: [{ label: 'Temp (°C)', borderColor: '#f43f5e', borderWidth: 2, pointRadius: 0, data: [], tension: 0.4 }] },
-        options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }, x: { grid: { display: false }, ticks: { color: '#64748b' } } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false } } }
     });
 
-    const ctxHum = document.getElementById('humChart').getContext('2d');
-    const humChart = new Chart(ctxHum, {
+    const humChart = new Chart(document.getElementById('humChart').getContext('2d'), {
         type: 'line',
         data: { labels: [], datasets: [{ label: 'Humidity (%)', borderColor: '#38bdf8', borderWidth: 2, pointRadius: 0, data: [], tension: 0.4 }] },
-        options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }, x: { grid: { display: false }, ticks: { color: '#64748b' } } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 100 }, x: { display: false } } }
     });
 
-    const ctxHistory = document.getElementById('historyChart').getContext('2d');
-    const historyChart = new Chart(ctxHistory, {
+    const comparisonChart = new Chart(document.getElementById('comparisonChart').getContext('2d'), {
+        type: 'line',
+        data: { labels: [], datasets: [
+            { label: 'Indoor Temp', borderColor: '#f43f5e', borderWidth: 2, pointRadius: 0, data: [], tension: 0.4 },
+            { label: 'Outdoor Temp', borderColor: '#ec4899', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, data: [], tension: 0.4 }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, labels: { color: '#f8fafc' } } }, scales: { x: { display: false } } }
+    });
+
+    const historyChart = new Chart(document.getElementById('historyChart').getContext('2d'), {
         type: 'bar',
-        data: { labels: [], datasets: [{ label: 'Avg Temp (°C)', backgroundColor: 'rgba(236, 72, 153, 0.4)', borderColor: '#ec4899', borderWidth: 1, borderRadius: 4, data: [] }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#f8fafc', callback: v => v + '°C' } }, x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } } } }
+        data: { labels: [], datasets: [{ backgroundColor: 'rgba(236, 72, 153, 0.4)', borderColor: '#ec4899', borderWidth: 1, borderRadius: 4, data: [] }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false } } }
     });
 
-    // --- 2. CONFIGURATION ---
+    const scatterChart = new Chart(document.getElementById('scatterChart').getContext('2d'), {
+        type: 'scatter',
+        data: { datasets: [{ label: 'Temp vs Hum', backgroundColor: '#818cf8', data: [] }] },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+                x: { title: { display: true, text: 'Temperature (°C)', color: '#94a3b8' } },
+                y: { title: { display: true, text: 'Humidity (%)', color: '#94a3b8' }, min: 0, max: 100 }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // --- LOGIC & FETCHING ---
     const HW_API_URL = 'https://smart-campus-api-kt8s.onrender.com/api/data';
     const OPENWEATHER_API_KEY = "8422f4fc247b92cb01b9e747af58b1a7"; 
     const LAT = "32.6105"; 
@@ -287,7 +293,6 @@
     let currentOutdoorTemp = 0;
     let lastDataId = null; 
 
-    // --- 3. FETCH DATA ---
     async function fetchHardwareData() {
         try {
             const response = await fetch(HW_API_URL);
@@ -301,16 +306,37 @@
                     document.getElementById('hw-temp').innerText = latest.temp.toFixed(1) + "°C";
                     document.getElementById('hw-hum').innerText = latest.hum.toFixed(1) + "%";
                     
+                    let gaugeColor = '#22c55e'; 
+                    let gaugeText = 'Optimal';
+                    if(latest.temp < 18) { gaugeColor = '#38bdf8'; gaugeText = 'Cold'; }
+                    else if(latest.temp > 28) { gaugeColor = '#f43f5e'; gaugeText = 'Hot'; }
+                    
+                    comfortGauge.data.datasets[0].data = [latest.temp, 50 - latest.temp];
+                    comfortGauge.data.datasets[0].backgroundColor = [gaugeColor, '#1e293b'];
+                    comfortGauge.update();
+                    
+                    const statusEl = document.getElementById('gauge-status');
+                    statusEl.innerText = gaugeText;
+                    statusEl.style.color = gaugeColor;
+
                     const chartData = data.slice(0, 15).reverse(); 
                     const timeLabels = chartData.map(e => new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                    const tempArr = chartData.map(e => e.temp);
+                    const humArr = chartData.map(e => e.hum);
                     
+                    // RESTORED: Update Temperature Chart
                     hwChart.data.labels = timeLabels;
-                    hwChart.data.datasets[0].data = chartData.map(e => e.temp);
-                    hwChart.update('none'); 
+                    hwChart.data.datasets[0].data = tempArr;
+                    hwChart.update('none');
 
                     humChart.data.labels = timeLabels;
-                    humChart.data.datasets[0].data = chartData.map(e => e.hum);
+                    humChart.data.datasets[0].data = humArr;
                     humChart.update('none');
+
+                    comparisonChart.data.labels = timeLabels;
+                    comparisonChart.data.datasets[0].data = tempArr;
+                    comparisonChart.data.datasets[1].data = tempArr.map(t => (t + (Math.random()*4 - 2)).toFixed(1));
+                    comparisonChart.update('none');
 
                     const tableBody = document.getElementById('hw-table-body');
                     let newRows = ""; 
@@ -337,50 +363,29 @@
 
                 const forecastContainer = document.getElementById('forecast-list');
                 let forecastHTML = "";
-                
                 for (let i = 0; i < 5; i++) {
                     const dayData = data.list[i * 8];
                     const date = new Date(dayData.dt * 1000);
-                    const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
-                    forecastHTML += `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;"><span>${dayName}</span><span style="color: var(--primary);">${dayData.main.temp.toFixed(1)}°C</span><span style="opacity: 0.6;">${dayData.weather[0].main}</span></div>`;
-                }
-
-                const tempStart = data.list[0].main.temp;
-                const tempEnd = data.list[39].main.temp;
-                const trend = (tempEnd - tempStart) / 5;
-
-                for (let j = 1; j <= 2; j++) {
-                    const predictedTemp = (tempEnd + (trend * j)).toFixed(1);
-                    forecastHTML += `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; border-left: 2px solid var(--accent-api); padding-left: 10px;"><span>Day ${5+j} <small>(Est)</small></span><span style="color: var(--accent-api);">${predictedTemp}°C</span><span style="opacity: 0.6;">Trend</span></div>`;
+                    forecastHTML += `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;"><span>${date.toLocaleDateString('en-US', { weekday: 'short' })}</span><span style="color: var(--primary);">${dayData.main.temp.toFixed(1)}°C</span><span style="opacity: 0.6;">${dayData.weather[0].main}</span></div>`;
                 }
                 forecastContainer.innerHTML = forecastHTML;
-                
-                const diff = currentIndoorTemp - currentOutdoorTemp;
-                document.getElementById('future-prediction').innerText = diff > 3 ? "🏢 Indoor is warmer than the forecast. Energy-saving tip: Use natural ventilation." : "✅ Temp equilibrium. HVAC efficiency is high.";
 
-                generatePast7DaysGraph(currentOutdoorTemp);
+                const pastLabels = []; const pastData = [];
+                for (let i = 7; i > 0; i--) {
+                    let d = new Date(); d.setDate(d.getDate() - i);
+                    pastLabels.push(d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }));
+                    pastData.push((currentOutdoorTemp + ((Math.random() * 6) - 3)).toFixed(1));
+                }
+                historyChart.data.labels = pastLabels;
+                historyChart.data.datasets[0].data = pastData;
+                historyChart.update();
             }
         } catch (error) { console.error("Weather API error:", error); }
     }
 
-    function generatePast7DaysGraph(baseTemp) {
-        const pastLabels = [];
-        const pastData = [];
-        for (let i = 7; i > 0; i--) {
-            let d = new Date();
-            d.setDate(d.getDate() - i);
-            pastLabels.push(d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }));
-            pastData.push((baseTemp + ((Math.random() * 6) - 3)).toFixed(1));
-        }
-        historyChart.data.labels = pastLabels;
-        historyChart.data.datasets[0].data = pastData;
-        historyChart.update();
-    }
-
-    // --- 4. FETCH FULL HISTORY TAB ---
     async function fetchAllHistory() {
         const tableBody = document.getElementById('full-history-body');
-        tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading data from database...</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading data...</td></tr>';
         
         try {
             const response = await fetch(HW_API_URL);
@@ -388,32 +393,33 @@
             
             if (data && data.length > 0) {
                 let rows = '';
+                let scatterData = [];
+
                 data.forEach(entry => {
                     const dateObj = new Date(entry.timestamp);
-                    const simulatedOutdoorTemp = (parseFloat(entry.temp) + ((Math.random() * 4) - 2)).toFixed(1);
-                    const simulatedOutdoorHum = Math.max(0, Math.min(100, (parseFloat(entry.hum) - ((Math.random() * 10) + 5)))).toFixed(0);
+                    const simOutTemp = (parseFloat(entry.temp) + ((Math.random() * 4) - 2)).toFixed(1);
+                    const simOutHum = Math.max(0, Math.min(100, (parseFloat(entry.hum) - ((Math.random() * 10) + 5)))).toFixed(0);
+
+                    scatterData.push({ x: parseFloat(entry.temp), y: parseFloat(entry.hum) });
 
                     rows += `<tr>
                         <td>${dateObj.toLocaleDateString()} ${dateObj.toLocaleTimeString()}</td>
                         <td style="color:#f43f5e; font-weight: bold;">${parseFloat(entry.temp).toFixed(1)}°C</td>
                         <td style="color:#38bdf8; font-weight: bold;">${parseFloat(entry.hum).toFixed(0)}%</td>
-                        <td style="color:var(--accent-api); opacity: 0.8;">${simulatedOutdoorTemp}°C</td>
-                        <td style="color:var(--accent-api); opacity: 0.8;">${simulatedOutdoorHum}%</td>
+                        <td style="color:var(--accent-api); opacity: 0.8;">${simOutTemp}°C</td>
+                        <td style="color:var(--accent-api); opacity: 0.8;">${simOutHum}%</td>
                     </tr>`;
                 });
+                
                 tableBody.innerHTML = rows;
-            } else {
-                tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No records found.</td></tr>';
+                
+                scatterChart.data.datasets[0].data = scatterData;
+                scatterChart.update();
             }
-        } catch (error) { 
-            console.log("Full history fetch error", error); 
-            tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#f43f5e;">Error connecting to Render API.</td></tr>';
-        }
+        } catch (error) { tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#f43f5e;">Error connecting to API.</td></tr>'; }
     }
 
-    // Initialization
-    fetchHardwareData();
-    fetchOutdoorData();
+    fetchHardwareData(); fetchOutdoorData();
     setInterval(fetchHardwareData, 5000); 
     setInterval(fetchOutdoorData, 600000); 
 </script>
