@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Campus-Sense | AI & IoT Analytics</title>
+    
+    <meta name="theme-color" content="#020617">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -15,6 +20,7 @@
             --text-main: #f8fafc;
             --accent-success: #22c55e;
             --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
             --accent-api: #ec4899;
         }
 
@@ -28,6 +34,7 @@
             display: grid;
             grid-template-columns: 260px 1fr;
             min-height: 100vh;
+            overflow: hidden; 
         }
 
         .sidebar { background: rgba(15, 23, 42, 0.9); border-right: 1px solid rgba(255, 255, 255, 0.1); padding: 30px 20px; display: flex; flex-direction: column; z-index: 10; }
@@ -61,6 +68,10 @@
         .gauge-container { position: relative; height: 120px; display: flex; justify-content: center; align-items: flex-end; }
         .gauge-text { position: absolute; bottom: 0; text-align: center; width: 100%; font-weight: bold; font-size: 1.2rem; }
 
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: rgba(15, 23, 42, 0.95); border-left: 4px solid var(--accent-danger); color: #fff; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 15px; }
+        .toast.show { transform: translateX(0); }
+
         @media (max-width: 900px) {
             body { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
             .sidebar { padding: 15px 20px; border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1); flex-direction: row; justify-content: space-between; align-items: center; }
@@ -73,11 +84,13 @@
 </head>
 <body>
 
+    <div id="toast-container"></div>
+
     <aside class="sidebar">
         <div class="logo">CAMPUS-SENSE</div>
         <div class="nav-items">
             <div class="nav-item active" id="nav-dashboard">📊 Dashboard</div>
-            <div class="nav-item" id="nav-history">📂 History</div>
+            <div class="nav-item" id="nav-history">📂 History & Export</div>
         </div>
     </aside>
 
@@ -173,7 +186,10 @@
         <div id="view-history" style="display: none; flex-direction: column; height: 100%;">
             <div class="panel-header left-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: none; flex-wrap: wrap; gap: 10px;">
                 <span>📂 HARDWARE & WEATHER LOGS</span>
-                <button onclick="fetchAllHistory()" style="background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">↻ Refresh Data</button>
+                <div>
+                    <button onclick="fetchAllHistory()" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">↻ Refresh</button>
+                    <button onclick="downloadCSV()" style="background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-left: 10px;">📥 Export CSV</button>
+                </div>
             </div>
             
             <div class="chart-section">
@@ -185,10 +201,11 @@
 
             <div class="chart-section" style="flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; padding: 0;">
                 <div style="overflow-x: auto; overflow-y: auto; height: 100%; padding: 20px;">
-                    <table>
+                    <table id="history-table">
                         <thead>
                             <tr>
-                                <th class="sticky-th">Date & Time</th>
+                                <th class="sticky-th">Date</th>
+                                <th class="sticky-th">Time</th>
                                 <th class="sticky-th">Indoor Temp</th>
                                 <th class="sticky-th">Indoor Hum</th>
                                 <th class="sticky-th" style="color: var(--accent-api);">Outdoor Temp</th>
@@ -196,7 +213,7 @@
                             </tr>
                         </thead>
                         <tbody id="full-history-body">
-                            <tr><td colspan="5" style="text-align:center;">Click "Refresh Data" to load all history.</td></tr>
+                            <tr><td colspan="6" style="text-align:center;">Click "Refresh Data" to load all history.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -231,6 +248,65 @@
         }
     });
 
+    // --- ALERT SYSTEM ---
+    let alertShown = false;
+    function checkThresholds(temp) {
+        if (temp > 32 && !alertShown) {
+            showToast("⚠️ WARNING: Critical Temperature Threshold Reached!");
+            alertShown = true;
+            setTimeout(() => { alertShown = false; }, 300000); 
+        }
+    }
+
+    function showToast(message) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<span style="font-size:1.5rem">🔥</span> <div><strong style="display:block; margin-bottom:3px;">System Alert</strong>${message}</div>`;
+        container.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 100);
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 400);
+        }, 5000);
+    }
+
+    // --- CSV EXPORT ---
+    function downloadCSV() {
+        // Updated header to match Date and Time separately
+        let csv = "Date,Time,Indoor Temp,Indoor Hum,Outdoor Temp,Outdoor Hum\n";
+        const rows = document.querySelectorAll("#full-history-body tr");
+        
+        rows.forEach(row => {
+            const cols = row.querySelectorAll("td");
+            if(cols.length > 1) { 
+                let rowData = [];
+                cols.forEach(col => {
+                    let cleanText = col.innerText.replace("°C", "").replace("%", "").trim();
+                    rowData.push('"' + cleanText + '"');
+                });
+                csv += rowData.join(",") + "\n";
+            }
+        });
+
+        if(csv.split('\n').length <= 2) {
+            alert("No data to download! Refresh the history table first.");
+            return;
+        }
+
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.setAttribute("hidden", "");
+        a.setAttribute("href", url);
+        a.setAttribute("download", "campus_sense_logs.csv");
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
     // --- CHART CONFIGURATIONS ---
     Chart.defaults.color = '#64748b';
     Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
@@ -241,7 +317,6 @@
         options: { rotation: -90, circumference: 180, cutout: '80%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
     });
 
-    // RESTORED: Standard Live Temperature Trend
     const hwChart = new Chart(document.getElementById('hwChart').getContext('2d'), {
         type: 'line',
         data: { labels: [], datasets: [{ label: 'Temp (°C)', borderColor: '#f43f5e', borderWidth: 2, pointRadius: 0, data: [], tension: 0.4 }] },
@@ -303,6 +378,9 @@
                 if (latest.id !== lastDataId) {
                     lastDataId = latest.id;
                     currentIndoorTemp = latest.temp;
+                    
+                    checkThresholds(latest.temp);
+
                     document.getElementById('hw-temp').innerText = latest.temp.toFixed(1) + "°C";
                     document.getElementById('hw-hum').innerText = latest.hum.toFixed(1) + "%";
                     
@@ -324,7 +402,6 @@
                     const tempArr = chartData.map(e => e.temp);
                     const humArr = chartData.map(e => e.hum);
                     
-                    // RESTORED: Update Temperature Chart
                     hwChart.data.labels = timeLabels;
                     hwChart.data.datasets[0].data = tempArr;
                     hwChart.update('none');
@@ -385,7 +462,8 @@
 
     async function fetchAllHistory() {
         const tableBody = document.getElementById('full-history-body');
-        tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading data...</td></tr>';
+        // Updated to colspan 6
+        tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading data...</td></tr>';
         
         try {
             const response = await fetch(HW_API_URL);
@@ -402,8 +480,10 @@
 
                     scatterData.push({ x: parseFloat(entry.temp), y: parseFloat(entry.hum) });
 
+                    // Putting date and time into their own separate <td> columns
                     rows += `<tr>
-                        <td>${dateObj.toLocaleDateString()} ${dateObj.toLocaleTimeString()}</td>
+                        <td>${dateObj.toLocaleDateString()}</td>
+                        <td>${dateObj.toLocaleTimeString()}</td>
                         <td style="color:#f43f5e; font-weight: bold;">${parseFloat(entry.temp).toFixed(1)}°C</td>
                         <td style="color:#38bdf8; font-weight: bold;">${parseFloat(entry.hum).toFixed(0)}%</td>
                         <td style="color:var(--accent-api); opacity: 0.8;">${simOutTemp}°C</td>
@@ -412,13 +492,13 @@
                 });
                 
                 tableBody.innerHTML = rows;
-                
                 scatterChart.data.datasets[0].data = scatterData;
                 scatterChart.update();
             }
-        } catch (error) { tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#f43f5e;">Error connecting to API.</td></tr>'; }
+        } catch (error) { tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#f43f5e;">Error connecting to API.</td></tr>'; }
     }
 
+    // Init
     fetchHardwareData(); fetchOutdoorData();
     setInterval(fetchHardwareData, 5000); 
     setInterval(fetchOutdoorData, 600000); 
