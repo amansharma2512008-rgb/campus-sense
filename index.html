@@ -59,7 +59,13 @@
         .chart-section { background: var(--card-bg); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
         .prediction-section { background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(129, 140, 248, 0.1)); border-radius: 16px; padding: 25px; border: 1px solid var(--accent-api); margin-bottom: 20px; }
         
-        .table-wrapper { max-height: 250px; overflow-y: auto; }
+        /* Table Styles */
+        .table-wrapper { 
+            width: 100%; /* Ensure it doesn't stretch past the screen */
+            max-height: 250px; 
+            overflow-y: auto; 
+            overflow-x: auto; /* Let ONLY the table scroll sideways */
+        }
         table { width: 100%; border-collapse: collapse; min-width: 500px; }
         th { text-align: left; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; }
         td { padding: 10px; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -72,11 +78,15 @@
         .toast { background: rgba(15, 23, 42, 0.95); border-left: 4px solid var(--accent-danger); color: #fff; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 15px; }
         .toast.show { transform: translateX(0); }
 
+        /* Prevent full-page sideways sliding globally */
+        html, body { overflow-x: hidden; width: 100%; }
+
         @media (max-width: 900px) {
             body { 
                 grid-template-columns: 1fr; 
                 grid-template-rows: auto 1fr; 
-                overflow-y: auto; /* <-- THIS FIXES THE MOBILE SCROLLING */
+                overflow-y: auto; 
+                overflow-x: hidden; 
             }
             .sidebar { 
                 padding: 15px 20px; 
@@ -85,15 +95,23 @@
                 flex-direction: row; 
                 justify-content: space-between; 
                 align-items: center; 
+                flex-wrap: wrap; /* Prevent buttons from pushing out */
             }
             .logo { margin-bottom: 0; font-size: 1.2rem; }
-            .nav-items { flex-direction: row; gap: 5px; }
+            .nav-items { flex-direction: row; flex-wrap: wrap; gap: 5px; }
             main { 
                 padding: 15px; 
                 height: auto; 
-                overflow-y: visible; /* <-- PREVENTS DOUBLE SCROLLBARS */
+                overflow-y: visible; 
+                overflow-x: hidden;
             }
-            .split-layout { grid-template-columns: 1fr; }
+            .split-layout { grid-template-columns: 1fr; width: 100%; }
+        }
+
+        /* Stack metric cards on very small screens (like iPhones) */
+        @media (max-width: 450px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .nav-item { font-size: 0.8rem; padding: 8px 10px; }
         }
     </style>
 </head>
