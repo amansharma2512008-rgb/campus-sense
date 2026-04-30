@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Campus-Sense | AI & IoT Analytics</title>
     
+    <!-- PWA Link -->
+    <link rel="manifest" href="manifest.json">
+    
     <meta name="theme-color" content="#020617">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -24,27 +27,18 @@
             --accent-api: #ec4899;
         }
 
-        /* STRICT BOX SIZING & WIDTHS */
         * { transition: all 0.3s ease; box-sizing: border-box; }
         
         html, body { 
-            margin: 0; 
-            padding: 0;
-            width: 100%; 
-            max-width: 100vw; /* Prevents absolutely any sideways stretching */
-            overflow-x: hidden; 
+            margin: 0; padding: 0;
+            width: 100%; max-width: 100vw; overflow-x: hidden; 
             font-family: 'Plus Jakarta Sans', sans-serif;
             background: radial-gradient(circle at top right, #1e1b4b, #020617);
             color: var(--text-main);
         }
 
-        body {
-            display: grid;
-            grid-template-columns: 260px minmax(0, 1fr); /* minmax(0, 1fr) is the magic fix for charts */
-            min-height: 100vh;
-        }
+        body { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
 
-        /* Sidebar Navigation */
         .sidebar { background: rgba(15, 23, 42, 0.9); border-right: 1px solid rgba(255, 255, 255, 0.1); padding: 30px 20px; display: flex; flex-direction: column; z-index: 10; }
         .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 40px; }
         .nav-items { display: flex; flex-direction: column; gap: 10px; }
@@ -52,17 +46,16 @@
         .nav-item:hover { opacity: 1; background: rgba(255,255,255,0.05); }
         .nav-item.active { background: var(--primary); color: #000; opacity: 1; font-weight: 600; }
 
-        /* Main Dashboard Area */
         main { padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; height: 100vh; width: 100%; max-width: 100%;}
-        
-        /* Split Screen Layout - using minmax to prevent chart blowouts */
         .split-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 30px; width: 100%; max-width: 100%; }
         
         .panel-header { font-size: 1.2rem; font-weight: 700; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .left-header { color: var(--primary); }
         .right-header { color: var(--accent-api); }
 
-        .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 15px; margin-bottom: 20px; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .dashboard-grid.two-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); } 
+
         .metric-card { background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; text-align: center; }
         .metric-card h3 { margin: 0; font-size: 0.8rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; }
         .metric-card .value { font-size: 2.2rem; font-weight: 700; margin: 10px 0; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -83,48 +76,23 @@
         .toast { background: rgba(15, 23, 42, 0.95); border-left: 4px solid var(--accent-danger); color: #fff; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 15px; }
         .toast.show { transform: translateX(0); }
 
-        /* ========================================= */
-        /* MOBILE RESPONSIVENESS (PHONES & TABLETS)  */
-        /* ========================================= */
-        @media (max-width: 900px) {
-            body { 
-                grid-template-columns: minmax(0, 1fr); 
-                grid-template-rows: auto 1fr; 
-                overflow-y: auto; 
-                overflow-x: hidden;
-            }
-            .sidebar { 
-                padding: 15px 20px; 
-                border-right: none; 
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
-                flex-direction: row; 
-                justify-content: space-between; 
-                align-items: center; 
-                flex-wrap: wrap; 
-            }
-            .logo { margin-bottom: 0; font-size: 1.2rem; }
-            .nav-items { flex-direction: row; gap: 10px; flex-wrap: wrap; }
-            
-            main { 
-                padding: 15px; 
-                height: auto; 
-                overflow-y: visible; 
-                overflow-x: hidden;
-                width: 100%;
-            }
-            .split-layout { 
-                grid-template-columns: minmax(0, 1fr); 
-                gap: 20px; 
-                width: 100%;
-            }
-            .chart-section, .prediction-section {
-                padding: 15px;
-            }
+        @media (max-width: 1200px) {
+            .dashboard-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
 
-        /* Stack metric cards on very small screens */
+        @media (max-width: 900px) {
+            body { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; overflow-y: auto; overflow-x: hidden; }
+            .sidebar { padding: 15px 20px; border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1); flex-direction: row; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+            .logo { margin-bottom: 0; font-size: 1.2rem; }
+            .nav-items { flex-direction: row; gap: 10px; flex-wrap: wrap; }
+            main { padding: 15px; height: auto; overflow-y: visible; overflow-x: hidden; width: 100%; }
+            .split-layout { grid-template-columns: minmax(0, 1fr); gap: 20px; width: 100%; }
+            .chart-section, .prediction-section { padding: 15px; }
+        }
+
         @media (max-width: 450px) {
             .dashboard-grid { grid-template-columns: minmax(0, 1fr); }
+            .dashboard-grid.two-cols { grid-template-columns: minmax(0, 1fr); }
             .nav-item { font-size: 0.85rem; padding: 8px 10px; }
             .panel-header { font-size: 1rem; flex-direction: column; align-items: flex-start !important; gap: 10px; }
         }
@@ -157,6 +125,14 @@
                         <h3>Indoor Humidity</h3>
                         <div id="hw-hum" class="value">--%</div>
                     </div>
+                    <div class="metric-card">
+                        <h3>Feels Like</h3>
+                        <div id="hw-feels-like" class="value" style="background: linear-gradient(to right, #f59e0b, #f43f5e); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">--°C</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Dew Point</h3>
+                        <div id="hw-dew-point" class="value" style="background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">--°C</div>
+                    </div>
                 </div>
 
                 <div class="chart-section" style="padding-bottom: 10px;">
@@ -168,21 +144,21 @@
                 </div>
 
                 <div class="chart-section">
-                    <h3 style="margin-top: 0; font-size: 0.8rem; color: #94a3b8;">LIVE TEMPERATURE TREND</h3>
+                    <h3 style="margin-top: 0; font-size: 0.8rem; color: #94a3b8;">5-MINUTE TEMPERATURE TREND</h3>
                     <div style="position: relative; height: 160px; width: 100%;">
                         <canvas id="hwChart"></canvas>
                     </div>
                 </div>
 
                 <div class="chart-section">
-                    <h3 style="margin-top: 0; font-size: 0.8rem; color: #94a3b8;">LIVE HUMIDITY TREND</h3>
+                    <h3 style="margin-top: 0; font-size: 0.8rem; color: #94a3b8;">5-MINUTE HUMIDITY TREND</h3>
                     <div style="position: relative; height: 140px; width: 100%;">
                         <canvas id="humChart"></canvas>
                     </div>
                 </div>
 
                 <div class="chart-section">
-                    <h3 style="margin-top: 0; font-size: 0.8rem; color: #94a3b8;">RECENT HARDWARE LOGS</h3>
+                    <h3 style="margin-top: 0; font-size: 0.8rem; color: #94a3b8;">RECENT HARDWARE LOGS (LIVE)</h3>
                     <div class="table-wrapper">
                         <table>
                             <thead><tr><th>Time</th><th>Temp</th><th>Hum</th></tr></thead>
@@ -195,7 +171,7 @@
             <div class="right-panel" style="width: 100%; max-width: 100%;">
                 <div class="panel-header right-header">🌍 OUTDOOR: Weather API</div>
                 
-                <div class="dashboard-grid">
+                <div class="dashboard-grid two-cols">
                     <div class="metric-card">
                         <h3>Outdoor Temp</h3>
                         <div id="api-temp" class="value">--°C</div>
@@ -208,7 +184,7 @@
                 </div>
 
                 <div class="chart-section">
-                    <h3 style="margin-top: 0; font-size: 0.8rem; color: var(--accent-api);">📊 INDOOR VS OUTDOOR COMPARISON</h3>
+                    <h3 style="margin-top: 0; font-size: 0.8rem; color: var(--accent-api);">📊 5-MINUTE INDOOR VS OUTDOOR</h3>
                     <div style="position: relative; height: 180px; width: 100%;">
                         <canvas id="comparisonChart"></canvas>
                     </div>
@@ -231,6 +207,7 @@
             </div>
         </div>
 
+        <!-- HISTORY TAB -->
         <div id="view-history" style="display: none; flex-direction: column; height: 100%; width: 100%;">
             <div class="panel-header left-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: none; flex-wrap: wrap; gap: 10px;">
                 <span>📂 HARDWARE & WEATHER LOGS</span>
@@ -321,9 +298,7 @@
         toast.className = 'toast';
         toast.innerHTML = `<span style="font-size:1.5rem">🔥</span> <div><strong style="display:block; margin-bottom:3px;">System Alert</strong>${message}</div>`;
         container.appendChild(toast);
-        
         setTimeout(() => toast.classList.add('show'), 100);
-        
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => toast.remove(), 400);
@@ -334,7 +309,6 @@
     function downloadCSV() {
         let csv = "Date,Time,Indoor Temp,Indoor Hum,Outdoor Temp,Outdoor Hum\n";
         const rows = document.querySelectorAll("#full-history-body tr");
-        
         rows.forEach(row => {
             const cols = row.querySelectorAll("td");
             if(cols.length > 1) { 
@@ -346,12 +320,10 @@
                 csv += rowData.join(",") + "\n";
             }
         });
-
         if(csv.split('\n').length <= 2) {
             alert("No data to download! Refresh the history table first.");
             return;
         }
-
         const blob = new Blob([csv], { type: "text/csv" });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -361,6 +333,52 @@
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+    }
+
+    // --- 5-MINUTE DATA AGGREGATION ---
+    function processFiveMinuteData(rawData) {
+        const buckets = {};
+        rawData.forEach(entry => {
+            const dateObj = new Date(entry.timestamp);
+            const dateString = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            
+            // Round minutes down to the nearest 5-minute interval
+            const minutes = dateObj.getMinutes();
+            const roundedMinutes = Math.floor(minutes / 5) * 5;
+            
+            const hourString = dateObj.getHours().toString().padStart(2, '0');
+            const minuteString = roundedMinutes.toString().padStart(2, '0');
+            
+            // e.g., "Oct 24 14:05"
+            const timeKey = `${dateString} ${hourString}:${minuteString}`;
+
+            // Create a sortable timestamp based on this specific 5-minute bucket
+            if (!buckets[timeKey]) {
+                // Using .setHours helps ensure cross-browser compatibility for parsing the time
+                const sortTimeObj = new Date(dateObj);
+                sortTimeObj.setHours(dateObj.getHours(), roundedMinutes, 0, 0);
+                
+                buckets[timeKey] = { tempSum: 0, humSum: 0, count: 0, sortTime: sortTimeObj.getTime() };
+            }
+            buckets[timeKey].tempSum += parseFloat(entry.temp);
+            buckets[timeKey].humSum += parseFloat(entry.hum);
+            buckets[timeKey].count += 1;
+        });
+
+        const sortedKeys = Object.keys(buckets).sort((a, b) => buckets[a].sortTime - buckets[b].sortTime);
+        // Take the last 20 buckets (which represents 100 minutes of trend data)
+        const recentKeys = sortedKeys.slice(-20); 
+
+        const labels = [];
+        const temps = [];
+        const hums = [];
+
+        recentKeys.forEach(key => {
+            labels.push(key);
+            temps.push(parseFloat((buckets[key].tempSum / buckets[key].count).toFixed(1)));
+            hums.push(parseFloat((buckets[key].humSum / buckets[key].count).toFixed(1)));
+        });
+        return { labels, temps, hums };
     }
 
     // --- CHART CONFIGURATIONS ---
@@ -375,29 +393,29 @@
 
     const hwChart = new Chart(document.getElementById('hwChart').getContext('2d'), {
         type: 'line',
-        data: { labels: [], datasets: [{ label: 'Temp (°C)', borderColor: '#f43f5e', borderWidth: 2, pointRadius: 0, data: [], tension: 0.4 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false } } }
+        data: { labels: [], datasets: [{ label: 'Temp (°C)', borderColor: '#f43f5e', backgroundColor: '#f43f5e', borderWidth: 2, pointRadius: 3, data: [], tension: 0.4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: true, ticks: { color: '#64748b', maxTicksLimit: 6 } } } }
     });
 
     const humChart = new Chart(document.getElementById('humChart').getContext('2d'), {
         type: 'line',
-        data: { labels: [], datasets: [{ label: 'Humidity (%)', borderColor: '#38bdf8', borderWidth: 2, pointRadius: 0, data: [], tension: 0.4 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 100 }, x: { display: false } } }
+        data: { labels: [], datasets: [{ label: 'Humidity (%)', borderColor: '#38bdf8', backgroundColor: '#38bdf8', borderWidth: 2, pointRadius: 3, data: [], tension: 0.4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 100 }, x: { display: true, ticks: { color: '#64748b', maxTicksLimit: 6 } } } }
     });
 
     const comparisonChart = new Chart(document.getElementById('comparisonChart').getContext('2d'), {
         type: 'line',
         data: { labels: [], datasets: [
-            { label: 'Indoor', borderColor: '#f43f5e', borderWidth: 2, pointRadius: 0, data: [], tension: 0.4 },
-            { label: 'Outdoor', borderColor: '#ec4899', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, data: [], tension: 0.4 }
+            { label: 'Indoor', borderColor: '#f43f5e', backgroundColor: '#f43f5e', borderWidth: 2, pointRadius: 3, data: [], tension: 0.4 },
+            { label: 'Outdoor', borderColor: '#ec4899', backgroundColor: '#ec4899', borderDash: [5, 5], borderWidth: 2, pointRadius: 3, data: [], tension: 0.4 }
         ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, labels: { color: '#f8fafc', boxWidth: 10 } } }, scales: { x: { display: false } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, labels: { color: '#f8fafc', boxWidth: 10 } } }, scales: { x: { display: true, ticks: { color: '#64748b', maxTicksLimit: 6 } } } }
     });
 
     const historyChart = new Chart(document.getElementById('historyChart').getContext('2d'), {
         type: 'bar',
         data: { labels: [], datasets: [{ backgroundColor: 'rgba(236, 72, 153, 0.4)', borderColor: '#ec4899', borderWidth: 1, borderRadius: 4, data: [] }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: true, ticks: { color: '#94a3b8' } } } }
     });
 
     const scatterChart = new Chart(document.getElementById('scatterChart').getContext('2d'), {
@@ -405,10 +423,7 @@
         data: { datasets: [{ label: 'Temp vs Hum', backgroundColor: '#818cf8', data: [] }] },
         options: {
             responsive: true, maintainAspectRatio: false,
-            scales: {
-                x: { title: { display: true, text: 'Temp (°C)', color: '#94a3b8' } },
-                y: { title: { display: true, text: 'Hum (%)', color: '#94a3b8' }, min: 0, max: 100 }
-            },
+            scales: { x: { title: { display: true, text: 'Temp (°C)', color: '#94a3b8' } }, y: { title: { display: true, text: 'Hum (%)', color: '#94a3b8' }, min: 0, max: 100 } },
             plugins: { legend: { display: false } }
         }
     });
@@ -420,8 +435,6 @@
     const LON = "74.9255";
     const WEATHER_API_URL = `https://api.openweathermap.org/data/2.5/forecast?lat=${LAT}&lon=${LON}&units=metric&appid=${OPENWEATHER_API_KEY}`;
     
-    let currentIndoorTemp = 0;
-    let currentOutdoorTemp = 0;
     let lastDataId = null; 
 
     async function fetchHardwareData() {
@@ -431,14 +444,19 @@
 
             if (data && data.length > 0) {
                 const latest = data[0];
+                
                 if (latest.id !== lastDataId) {
                     lastDataId = latest.id;
-                    currentIndoorTemp = latest.temp;
-                    
                     checkThresholds(latest.temp);
 
                     document.getElementById('hw-temp').innerText = latest.temp.toFixed(1) + "°C";
                     document.getElementById('hw-hum').innerText = latest.hum.toFixed(1) + "%";
+                    
+                    let feelsLikeTemp = latest.feels_like !== undefined ? latest.feels_like : latest.temp + 0.33 * (latest.hum / 100.0) * 6.105 * Math.exp(17.27 * latest.temp / (237.7 + latest.temp)) - 4.0;
+                    document.getElementById('hw-feels-like').innerText = parseFloat(feelsLikeTemp).toFixed(1) + "°C";
+                    
+                    let dewPointTemp = latest.dew_point !== undefined ? latest.dew_point : latest.temp - ((100 - latest.hum) / 5.0);
+                    document.getElementById('hw-dew-point').innerText = parseFloat(dewPointTemp).toFixed(1) + "°C";
                     
                     let gaugeColor = '#22c55e'; 
                     let gaugeText = 'Optimal';
@@ -453,24 +471,6 @@
                     statusEl.innerText = gaugeText;
                     statusEl.style.color = gaugeColor;
 
-                    const chartData = data.slice(0, 15).reverse(); 
-                    const timeLabels = chartData.map(e => new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-                    const tempArr = chartData.map(e => e.temp);
-                    const humArr = chartData.map(e => e.hum);
-                    
-                    hwChart.data.labels = timeLabels;
-                    hwChart.data.datasets[0].data = tempArr;
-                    hwChart.update('none');
-
-                    humChart.data.labels = timeLabels;
-                    humChart.data.datasets[0].data = humArr;
-                    humChart.update('none');
-
-                    comparisonChart.data.labels = timeLabels;
-                    comparisonChart.data.datasets[0].data = tempArr;
-                    comparisonChart.data.datasets[1].data = tempArr.map(t => (t + (Math.random()*4 - 2)).toFixed(1));
-                    comparisonChart.update('none');
-
                     const tableBody = document.getElementById('hw-table-body');
                     let newRows = ""; 
                     data.slice(0, 10).forEach(entry => {
@@ -478,6 +478,22 @@
                     });
                     tableBody.innerHTML = newRows;
                 }
+
+                // Update Charts with 5-minute aggregated data
+                const processedData = processFiveMinuteData(data);
+                
+                hwChart.data.labels = processedData.labels;
+                hwChart.data.datasets[0].data = processedData.temps;
+                hwChart.update('none');
+
+                humChart.data.labels = processedData.labels;
+                humChart.data.datasets[0].data = processedData.hums;
+                humChart.update('none');
+
+                comparisonChart.data.labels = processedData.labels;
+                comparisonChart.data.datasets[0].data = processedData.temps;
+                comparisonChart.data.datasets[1].data = processedData.temps.map(t => (parseFloat(t) + (Math.random()*4 - 2)).toFixed(1));
+                comparisonChart.update('none');
             }
         } catch (error) { console.log("Hardware offline..."); }
     }
@@ -489,7 +505,7 @@
             
             if(data.list) {
                 const current = data.list[0];
-                currentOutdoorTemp = current.main.temp;
+                let currentOutdoorTemp = current.main.temp;
                 document.getElementById('api-temp').innerText = current.main.temp.toFixed(1) + "°C";
                 document.getElementById('api-hum').innerText = current.main.humidity + "%";
                 document.getElementById('api-desc').innerText = current.weather[0].description;
@@ -556,6 +572,6 @@
     fetchHardwareData(); fetchOutdoorData();
     setInterval(fetchHardwareData, 5000); 
     setInterval(fetchOutdoorData, 600000); 
-</script>
+    </script>
 </body>
 </html>
