@@ -453,7 +453,7 @@
         }
     });
 
-    // --- LOGIC & FETCHING ---
+// --- LOGIC & FETCHING ---
     const HW_API_URL = 'https://smart-campus-api-kt8s.onrender.com/api/data';
     const OPENWEATHER_API_KEY = "8422f4fc247b92cb01b9e747af58b1a7"; 
     const LAT = "32.6344"; 
@@ -461,6 +461,7 @@
     const WEATHER_API_URL = `https://api.openweathermap.org/data/2.5/forecast?lat=${LAT}&lon=${LON}&units=metric&appid=${OPENWEATHER_API_KEY}`;
     
     let lastDataId = null; 
+    let localDataMemory = new Map(); // 🛑 THE FIX: Browser memory to store the continuous history
 
     async function fetchHardwareData() {
         try {
@@ -470,6 +471,7 @@
             if (data && data.length > 0) {
                 const latest = data[0];
                 
+                // 1. Update Top Metric Cards
                 if (latest.id !== lastDataId) {
                     lastDataId = latest.id;
                     checkThresholds(latest.temp);
@@ -504,7 +506,21 @@
                     tableBody.innerHTML = newRows;
                 }
 
-                const processedData = processFiveMinuteData(data);
+                // 🛑 THE FIX: Push all fetched data into our Map to build a continuous timeline
+                data.forEach(entry => {
+                    localDataMemory.set(entry.id, entry);
+                });
+
+                // Convert our memory Map back into an array and sort it oldest-to-newest
+                let combinedHistory = Array.from(localDataMemory.values()).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+                // Keep memory clean so the browser doesn't crash (Keep the last 400 readings = ~33 minutes of safe data)
+                if (combinedHistory.length > 400) {
+                    combinedHistory = combinedHistory.slice(-400);
+                }
+
+                // Pass our massive combined history to the graphs, rather than the small API chunk!
+                const processedData = processFiveMinuteData(combinedHistory);
                 
                 hwChart.data.labels = processedData.labels;
                 hwChart.data.datasets[0].data = processedData.temps;
