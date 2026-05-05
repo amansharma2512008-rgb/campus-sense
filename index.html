@@ -394,13 +394,25 @@
     const hwChart = new Chart(document.getElementById('hwChart').getContext('2d'), {
         type: 'line',
         data: { labels: [], datasets: [{ label: 'Temp (°C)', borderColor: '#f43f5e', backgroundColor: '#f43f5e', borderWidth: 2, pointRadius: 3, data: [], tension: 0.4 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: true, ticks: { color: '#64748b', maxTicksLimit: 6 } } } }
+        options: { 
+            responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, 
+            scales: { 
+                x: { display: true, title: { display: true, text: 'Time', color: '#94a3b8' }, ticks: { color: '#64748b', maxTicksLimit: 6 } },
+                y: { display: true, title: { display: true, text: 'Temperature (°C)', color: '#94a3b8' } }
+            } 
+        }
     });
 
     const humChart = new Chart(document.getElementById('humChart').getContext('2d'), {
         type: 'line',
         data: { labels: [], datasets: [{ label: 'Humidity (%)', borderColor: '#38bdf8', backgroundColor: '#38bdf8', borderWidth: 2, pointRadius: 3, data: [], tension: 0.4 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 100 }, x: { display: true, ticks: { color: '#64748b', maxTicksLimit: 6 } } } }
+        options: { 
+            responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, 
+            scales: { 
+                y: { min: 0, max: 100, title: { display: true, text: 'Humidity (%)', color: '#94a3b8' } }, 
+                x: { display: true, title: { display: true, text: 'Time', color: '#94a3b8' }, ticks: { color: '#64748b', maxTicksLimit: 6 } } 
+            } 
+        }
     });
 
     const comparisonChart = new Chart(document.getElementById('comparisonChart').getContext('2d'), {
@@ -409,13 +421,25 @@
             { label: 'Indoor', borderColor: '#f43f5e', backgroundColor: '#f43f5e', borderWidth: 2, pointRadius: 3, data: [], tension: 0.4 },
             { label: 'Outdoor', borderColor: '#ec4899', backgroundColor: '#ec4899', borderDash: [5, 5], borderWidth: 2, pointRadius: 3, data: [], tension: 0.4 }
         ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, labels: { color: '#f8fafc', boxWidth: 10 } } }, scales: { x: { display: true, ticks: { color: '#64748b', maxTicksLimit: 6 } } } }
+        options: { 
+            responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, labels: { color: '#f8fafc', boxWidth: 10 } } }, 
+            scales: { 
+                x: { display: true, title: { display: true, text: 'Time', color: '#94a3b8' }, ticks: { color: '#64748b', maxTicksLimit: 6 } },
+                y: { display: true, title: { display: true, text: 'Temperature (°C)', color: '#94a3b8' } }
+            } 
+        }
     });
 
     const historyChart = new Chart(document.getElementById('historyChart').getContext('2d'), {
         type: 'bar',
         data: { labels: [], datasets: [{ backgroundColor: 'rgba(236, 72, 153, 0.4)', borderColor: '#ec4899', borderWidth: 1, borderRadius: 4, data: [] }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: true, ticks: { color: '#94a3b8' } } } }
+        options: { 
+            responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, 
+            scales: { 
+                x: { display: true, title: { display: true, text: 'Date', color: '#94a3b8' }, ticks: { color: '#94a3b8' } },
+                y: { display: true, title: { display: true, text: 'Temperature (°C)', color: '#94a3b8' } }
+            } 
+        }
     });
 
     const scatterChart = new Chart(document.getElementById('scatterChart').getContext('2d'), {
@@ -423,7 +447,10 @@
         data: { datasets: [{ label: 'Temp vs Hum', backgroundColor: '#818cf8', data: [] }] },
         options: {
             responsive: true, maintainAspectRatio: false,
-            scales: { x: { title: { display: true, text: 'Temp (°C)', color: '#94a3b8' } }, y: { title: { display: true, text: 'Hum (%)', color: '#94a3b8' }, min: 0, max: 100 } },
+            scales: { 
+                x: { title: { display: true, text: 'Temperature (°C)', color: '#94a3b8' } }, 
+                y: { title: { display: true, text: 'Humidity (%)', color: '#94a3b8' }, min: 0, max: 100 } 
+            },
             plugins: { legend: { display: false } }
         }
     });
