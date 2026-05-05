@@ -365,8 +365,7 @@
 
         const sortedKeys = Object.keys(buckets).sort((a, b) => buckets[a].sortTime - buckets[b].sortTime);
         
-        // 🛑 THE FIX: Take only the last 6 buckets (6 * 5 mins = 30 minutes total)
-        const recentKeys = sortedKeys.slice(-10); 
+        const recentKeys = sortedKeys.slice(-12); 
 
         const labels = [];
         const temps = [];
