@@ -285,7 +285,7 @@
     // --- ALERT SYSTEM ---
     let alertShown = false;
     function checkThresholds(temp) {
-        if (temp > 32 && !alertShown) {
+        if (temp > 38 && !alertShown) {
             showToast("⚠️ WARNING: Critical Temperature Threshold Reached!");
             alertShown = true;
             setTimeout(() => { alertShown = false; }, 300000); 
