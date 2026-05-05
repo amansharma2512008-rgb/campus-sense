@@ -335,7 +335,7 @@
         document.body.removeChild(a);
     }
 
-    // --- 5-MINUTE DATA AGGREGATION ---
+    // --- 5-MINUTE DATA AGGREGATION (30-MINUTE WINDOW) ---
     function processFiveMinuteData(rawData) {
         const buckets = {};
         rawData.forEach(entry => {
@@ -364,7 +364,9 @@
         });
 
         const sortedKeys = Object.keys(buckets).sort((a, b) => buckets[a].sortTime - buckets[b].sortTime);
-        const recentKeys = sortedKeys.slice(-20); 
+        
+        // 🛑 THE FIX: Take only the last 6 buckets (6 * 5 mins = 30 minutes total)
+        const recentKeys = sortedKeys.slice(-6); 
 
         const labels = [];
         const temps = [];
