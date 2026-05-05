@@ -192,7 +192,7 @@
                 </div>
 
                 <div class="prediction-section">
-                    <h3 style="margin-top: 0; font-size: 1rem; color: var(--accent-api);">🔮 7-Day Forecast</h3>
+                    <h3 style="margin-top: 0; font-size: 1rem; color: var(--accent-api);">🔮 5-Day Forecast</h3>
                     <div id="forecast-list" style="margin-top: 15px;"></div>
                     <hr style="border: 0.5px solid rgba(255,255,255,0.1); margin: 15px 0;">
                     <p id="future-prediction" style="font-size: 0.9rem; line-height: 1.4; color: var(--primary);">Analyzing current deltas...</p>
@@ -354,10 +354,8 @@
 
             // Create a sortable timestamp based on this specific 5-minute bucket
             if (!buckets[timeKey]) {
-                // Using .setHours helps ensure cross-browser compatibility for parsing the time
                 const sortTimeObj = new Date(dateObj);
                 sortTimeObj.setHours(dateObj.getHours(), roundedMinutes, 0, 0);
-                
                 buckets[timeKey] = { tempSum: 0, humSum: 0, count: 0, sortTime: sortTimeObj.getTime() };
             }
             buckets[timeKey].tempSum += parseFloat(entry.temp);
@@ -366,7 +364,6 @@
         });
 
         const sortedKeys = Object.keys(buckets).sort((a, b) => buckets[a].sortTime - buckets[b].sortTime);
-        // Take the last 20 buckets (which represents 100 minutes of trend data)
         const recentKeys = sortedKeys.slice(-20); 
 
         const labels = [];
@@ -506,7 +503,6 @@
                     tableBody.innerHTML = newRows;
                 }
 
-                // Update Charts with 5-minute aggregated data
                 const processedData = processFiveMinuteData(data);
                 
                 hwChart.data.labels = processedData.labels;
@@ -531,21 +527,52 @@
             const data = await response.json();
             
             if(data.list) {
+                // 1. Set current outdoor metrics
                 const current = data.list[0];
                 let currentOutdoorTemp = current.main.temp;
                 document.getElementById('api-temp').innerText = current.main.temp.toFixed(1) + "°C";
                 document.getElementById('api-hum').innerText = current.main.humidity + "%";
                 document.getElementById('api-desc').innerText = current.weather[0].description;
 
+                // 2. Build the 5-Day Min/Max Forecast with a Global Header
                 const forecastContainer = document.getElementById('forecast-list');
-                let forecastHTML = "";
+                
+                // Add the Column Header row first
+                let forecastHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+                    <span style="width: 45px;">Day</span>
+                    <span style="flex-grow: 1; text-align: left; padding-left: 10px;">Condition</span>
+                    <div style="display: flex; justify-content: flex-end; gap: 15px; min-width: 80px;">
+                        <span style="color: #ec4899; width: 35px; text-align: right; letter-spacing: 0.5px;">Max</span>
+                        <span style="color: #38bdf8; width: 35px; text-align: right; letter-spacing: 0.5px;">Min</span>
+                    </div>
+                </div>`;
+                
                 for (let i = 0; i < 5; i++) {
-                    const dayData = data.list[i * 8];
-                    const date = new Date(dayData.dt * 1000);
-                    forecastHTML += `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;"><span>${date.toLocaleDateString('en-US', { weekday: 'short' })}</span><span style="color: var(--primary);">${dayData.main.temp.toFixed(1)}°C</span><span style="opacity: 0.6;">${dayData.weather[0].main}</span></div>`;
+                    const dailyData = data.list.slice(i * 8, (i + 1) * 8);
+                    if (dailyData.length === 0) break;
+
+                    let minTemp = Math.min(...dailyData.map(d => d.main.temp_min));
+                    let maxTemp = Math.max(...dailyData.map(d => d.main.temp_max));
+
+                    const representativeData = dailyData[Math.floor(dailyData.length / 2)];
+                    const date = new Date(representativeData.dt * 1000);
+                    
+                    // Generate the clean data rows directly underneath the headers
+                    forecastHTML += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 0.9rem;">
+                        <span style="width: 45px; font-weight: bold;">${date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                        <span style="flex-grow: 1; text-align: left; padding-left: 10px; opacity: 0.7; text-transform: capitalize;">${representativeData.weather[0].main}</span>
+                        
+                        <div style="display: flex; justify-content: flex-end; gap: 15px; min-width: 80px;">
+                            <span style="color: #f8fafc; font-weight: bold; width: 35px; text-align: right;">${maxTemp.toFixed(1)}°</span> 
+                            <span style="color: #94a3b8; font-weight: bold; width: 35px; text-align: right;">${minTemp.toFixed(1)}°</span>
+                        </div>
+                    </div>`;
                 }
                 forecastContainer.innerHTML = forecastHTML;
 
+                // 3. Update the simulated history chart
                 const pastLabels = []; const pastData = [];
                 for (let i = 7; i > 0; i--) {
                     let d = new Date(); d.setDate(d.getDate() - i);
